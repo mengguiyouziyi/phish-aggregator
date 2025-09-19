@@ -28,7 +28,25 @@
         <!-- URL输入 -->
         <div class="form-group">
           <label for="urls">待检测URL（每行一个）</label>
-          <textarea id="urls" placeholder="https://example.com&#10;https://test.com"></textarea>
+          <div class="url-input-container">
+            <textarea id="urls" placeholder="https://example.com&#10;https://test.com"></textarea>
+            <div class="url-history-controls">
+              <button id="history-btn" class="history-btn" title="查看历史记录">
+                <i class="fas fa-history"></i>
+              </button>
+              <div id="history-dropdown" class="history-dropdown" style="display: none;">
+                <div class="history-header">
+                  <span>历史记录</span>
+                  <button id="clear-history-btn" class="clear-history-btn" title="清空历史记录">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+                <div id="history-list" class="history-list">
+                  <!-- 历史记录项将在这里动态生成 -->
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 阈值设置 -->

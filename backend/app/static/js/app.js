@@ -21,6 +21,223 @@ const AppState = {
   }
 };
 
+// URL历史记录管理器
+const URLHistoryManager = {
+  STORAGE_KEY: 'phish_aggregator_url_history',
+  MAX_ITEMS: 50,
+
+  /**
+   * 获取历史记录
+   */
+  getHistory() {
+    try {
+      const history = localStorage.getItem(this.STORAGE_KEY);
+      return history ? JSON.parse(history) : [];
+    } catch (error) {
+      console.error('获取历史记录失败:', error);
+      return [];
+    }
+  },
+
+  /**
+   * 保存历史记录
+   * @param {Array} history - 历史记录数组
+   */
+  saveHistory(history) {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
+    } catch (error) {
+      console.error('保存历史记录失败:', error);
+    }
+  },
+
+  /**
+   * 添加URL到历史记录
+   * @param {string|array} urls - URL字符串或URL数组
+   */
+  addURLs(urls) {
+    const urlArray = Array.isArray(urls) ? urls : urls.split('\n').map(u => u.trim()).filter(Boolean);
+    if (urlArray.length === 0) return;
+
+    const history = this.getHistory();
+    const timestamp = new Date().toISOString();
+
+    urlArray.forEach(url => {
+      // 检查是否已存在相同的URL
+      const existingIndex = history.findIndex(item => item.url === url);
+
+      if (existingIndex >= 0) {
+        // 更新现有记录的时间戳和使用次数
+        history[existingIndex].timestamp = timestamp;
+        history[existingIndex].count = (history[existingIndex].count || 1) + 1;
+        history[existingIndex].urlCount = urlArray.length;
+      } else {
+        // 添加新记录
+        history.unshift({
+          url: url,
+          timestamp: timestamp,
+          count: 1,
+          urlCount: urlArray.length
+        });
+      }
+    });
+
+    // 按时间戳排序并限制数量
+    history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const trimmedHistory = history.slice(0, this.MAX_ITEMS);
+
+    this.saveHistory(trimmedHistory);
+    this.renderHistory();
+  },
+
+  /**
+   * 移除单个历史记录
+   * @param {string} url - 要移除的URL
+   */
+  removeURL(url) {
+    const history = this.getHistory();
+    const filteredHistory = history.filter(item => item.url !== url);
+    this.saveHistory(filteredHistory);
+    this.renderHistory();
+  },
+
+  /**
+   * 清空所有历史记录
+   */
+  clearHistory() {
+    localStorage.removeItem(this.STORAGE_KEY);
+    this.renderHistory();
+  },
+
+  /**
+   * 格式化时间戳
+   * @param {string} timestamp - ISO时间戳
+   */
+  formatTime(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return '刚刚';
+    if (diffMins < 60) return `${diffMins}分钟前`;
+    if (diffHours < 24) return `${diffHours}小时前`;
+    if (diffDays < 7) return `${diffDays}天前`;
+
+    return date.toLocaleDateString('zh-CN');
+  },
+
+  /**
+   * 渲染历史记录列表
+   */
+  renderHistory() {
+    const historyList = document.getElementById('history-list');
+    if (!historyList) return;
+
+    const history = this.getHistory();
+
+    if (history.length === 0) {
+      historyList.innerHTML = '<div class="history-empty">暂无历史记录</div>';
+      return;
+    }
+
+    historyList.innerHTML = history.map(item => `
+      <div class="history-item" data-url="${item.url}">
+        <div class="history-url">${Utils.escapeHtml(item.url)}</div>
+        <div class="history-time">
+          <span>${this.formatTime(item.timestamp)}</span>
+          <div>
+            ${item.urlCount > 1 ? `<span class="history-count">${item.urlCount}个</span>` : ''}
+            ${item.count > 1 ? `<span class="history-count">${item.count}次</span>` : ''}
+            <button class="history-item-remove" onclick="URLHistoryManager.removeURL('${item.url.replace(/'/g, "\\'")}')">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // 添加点击事件
+    historyList.querySelectorAll('.history-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        // 如果点击的是删除按钮，不触发URL填充
+        if (e.target.closest('.history-item-remove')) return;
+
+        const url = item.dataset.url;
+        this.fillURL(url);
+      });
+    });
+  },
+
+  /**
+   * 填充URL到输入框
+   * @param {string} url - 要填充的URL
+   */
+  fillURL(url) {
+    const urlTextarea = document.getElementById('urls');
+    if (!urlTextarea) return;
+
+    // 如果输入框为空，直接填充
+    if (!urlTextarea.value.trim()) {
+      urlTextarea.value = url;
+    } else {
+      // 如果输入框已有内容，添加到新行
+      const currentUrls = urlTextarea.value.split('\n').map(u => u.trim()).filter(Boolean);
+      if (!currentUrls.includes(url)) {
+        currentUrls.push(url);
+        urlTextarea.value = currentUrls.join('\n');
+      }
+    }
+
+    // 聚焦到输入框
+    urlTextarea.focus();
+
+    // 隐藏历史记录下拉框
+    this.hideDropdown();
+  },
+
+  /**
+   * 显示历史记录下拉框
+   */
+  showDropdown() {
+    const dropdown = document.getElementById('history-dropdown');
+    const historyBtn = document.getElementById('history-btn');
+
+    if (dropdown) {
+      dropdown.style.display = 'flex';
+      historyBtn.classList.add('active');
+      this.renderHistory();
+    }
+  },
+
+  /**
+   * 隐藏历史记录下拉框
+   */
+  hideDropdown() {
+    const dropdown = document.getElementById('history-dropdown');
+    const historyBtn = document.getElementById('history-btn');
+
+    if (dropdown) {
+      dropdown.style.display = 'none';
+      historyBtn.classList.remove('active');
+    }
+  },
+
+  /**
+   * 切换下拉框显示状态
+   */
+  toggleDropdown() {
+    const dropdown = document.getElementById('history-dropdown');
+    if (dropdown.style.display === 'none' || !dropdown.style.display) {
+      this.showDropdown();
+    } else {
+      this.hideDropdown();
+    }
+  }
+};
+
 // 工具函数库
 const Utils = {
   /**
@@ -137,6 +354,17 @@ const Utils = {
       // 如果URL解析失败，简单截断
       return url.substring(0, maxLength - 3) + '...';
     }
+  },
+
+  /**
+   * HTML转义
+   * @param {string} text - 要转义的文本
+   * @returns {string} 转义后的文本
+   */
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 };
 
@@ -559,15 +787,20 @@ const AppController = {
     }
 
     // 扫描按钮
-    const scanButton = document.querySelector('button[onclick="AppController.runScan()"]');
+    const scanButton = Array.from(document.querySelectorAll('button')).find(btn =>
+      btn.textContent.trim().includes('开始扫描') && btn.parentElement.className === 'button-group'
+    );
     if (scanButton) {
       scanButton.setAttribute('onclick', '');
       scanButton.addEventListener('click', () => this.runScan());
+      console.log('✅ 扫描按钮事件绑定成功');
+    } else {
+      console.error('❌ 未找到扫描按钮');
     }
 
     // 评测按钮
     const evalButton = Array.from(document.querySelectorAll('button')).find(btn =>
-      btn.textContent.includes('开始评测') && btn.parentElement.className === 'button-group'
+      btn.textContent.trim().includes('开始评测') && btn.parentElement.className === 'button-group'
     );
     if (evalButton) {
       // 完全移除现有的onclick属性和事件监听器
@@ -584,6 +817,37 @@ const AppController = {
     } else {
       console.error('❌ 未找到评测按钮');
     }
+
+    // 历史记录按钮事件绑定
+    const historyBtn = document.getElementById('history-btn');
+    if (historyBtn) {
+      historyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        URLHistoryManager.toggleDropdown();
+      });
+      console.log('✅ 历史记录按钮事件绑定成功');
+    }
+
+    // 清空历史记录按钮事件绑定
+    const clearHistoryBtn = document.getElementById('clear-history-btn');
+    if (clearHistoryBtn) {
+      clearHistoryBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (confirm('确定要清空所有历史记录吗？')) {
+          URLHistoryManager.clearHistory();
+          Utils.showNotification('历史记录已清空', 'success');
+        }
+      });
+      console.log('✅ 清空历史记录按钮事件绑定成功');
+    }
+
+    // 点击页面其他地方关闭历史记录下拉框
+    document.addEventListener('click', (e) => {
+      const historyControls = document.querySelector('.url-history-controls');
+      if (historyControls && !historyControls.contains(e.target)) {
+        URLHistoryManager.hideDropdown();
+      }
+    });
   },
 
   /**
@@ -630,7 +894,7 @@ const AppController = {
     }
 
     const scanButton = Array.from(document.querySelectorAll('button')).find(btn =>
-      btn.textContent.includes('开始扫描')
+      btn.textContent.trim().includes('开始扫描') && btn.parentElement.className === 'button-group'
     ) || document.querySelector('button[onclick*="runScan"]');
 
     if (!scanButton) {
@@ -652,6 +916,9 @@ const AppController = {
 
       const data = await ApiService.scan(params);
       RenderEngine.renderScanResults(data);
+
+      // 保存URL到历史记录
+      URLHistoryManager.addURLs(urls);
 
       Utils.showNotification('扫描完成', 'success');
 
@@ -681,7 +948,7 @@ const AppController = {
     }
 
     const evalButton = Array.from(document.querySelectorAll('button')).find(btn =>
-      btn.textContent.includes('开始评测')
+      btn.textContent.trim().includes('开始评测') && btn.parentElement.className === 'button-group'
     ) || document.querySelector('button[onclick*="runEval"]');
 
     if (!evalButton) {
@@ -703,6 +970,9 @@ const AppController = {
 
       const data = await ApiService.evaluate(params);
       RenderEngine.renderEvalResults(data);
+
+      // 保存URL到历史记录
+      URLHistoryManager.addURLs(urls);
 
       Utils.showNotification('评测完成', 'success');
 
@@ -728,3 +998,4 @@ window.ApiService = ApiService;
 window.UIManager = UIManager;
 window.RenderEngine = RenderEngine;
 window.StrategyManager = StrategyManager;
+window.URLHistoryManager = URLHistoryManager;
