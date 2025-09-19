@@ -262,21 +262,72 @@ visual_detector = VisualPhishDetector()
 # 初始化一些常见的目标网站
 async def initialize_targets():
     """初始化常见的目标网站"""
+    print("🎯 正在初始化目标网站...")
+
+    # 钓鱼网站常用伪装目标（包括银行、支付、社交、邮箱等）
     common_targets = [
+        # 国际银行和支付
+        ("https://www.paypal.com", "PayPal"),
+        ("https://www.icbc.com.cn", "中国工商银行"),
+        ("https://www.alipay.com", "支付宝"),
+        ("https://www.bankofamerica.com", "Bank of America"),
+        ("https://www.chase.com", "Chase Bank"),
+        ("https://www.wellsfargo.com", "Wells Fargo"),
+        ("https://www.citibank.com", "Citi Bank"),
+        ("https://www.hsbc.com", "HSBC"),
+
+        # 中国主要银行
+        ("https://www.boc.cn", "中国银行"),
+        ("https://www.ccb.com", "中国建设银行"),
+        ("https://www.abchina.com", "中国农业银行"),
+        ("https://www.cmbchina.com", "招商银行"),
+
+        # 社交媒体
         ("https://www.facebook.com", "Facebook"),
-        ("https://www.google.com", "Google"),
-        ("https://github.com", "GitHub"),
+        ("https://www.instagram.com", "Instagram"),
         ("https://www.twitter.com", "Twitter"),
         ("https://www.linkedin.com", "LinkedIn"),
-        ("https://www.microsoft.com", "Microsoft"),
+        ("https://www.qq.com", "腾讯QQ"),
+        ("https://weibo.com", "新浪微博"),
+
+        # 邮箱服务
+        ("https://mail.google.com", "Gmail"),
+        ("https://outlook.live.com", "Outlook"),
+        ("https://mail.yahoo.com", "Yahoo Mail"),
+        ("https://mail.163.com", "网易邮箱"),
+        ("https://mail.qq.com", "QQ邮箱"),
+
+        # 电商平台
         ("https://www.amazon.com", "Amazon"),
-        ("https://www.paypal.com", "PayPal")
+        ("https://www.taobao.com", "淘宝"),
+        ("https://www.jd.com", "京东"),
+        ("https://www.ebay.com", "eBay"),
+
+        # 科技公司
+        ("https://www.google.com", "Google"),
+        ("https://www.microsoft.com", "Microsoft"),
+        ("https://www.apple.com", "Apple"),
+        ("https://github.com", "GitHub"),
+
+        # 其他常用服务
+        ("https://www.netflix.com", "Netflix"),
+        ("https://www.spotify.com", "Spotify"),
+        ("https://www.dropbox.com", "Dropbox"),
     ]
 
+    added_count = 0
     for url, name in common_targets:
         try:
-            await visual_detector.add_known_target(url, name)
+            success = await visual_detector.add_known_target(url, name)
+            if success:
+                added_count += 1
+                print(f"✅ 已添加目标: {name}")
+            else:
+                print(f"❌ 添加目标失败: {name}")
+
             # 添加延迟避免过于频繁的请求
-            await asyncio.sleep(2)
+            await asyncio.sleep(1)
         except Exception as e:
-            print(f"初始化目标网站 {name} 失败: {e}")
+            print(f"❌ 添加目标异常: {name} - {e}")
+
+    print(f"🎯 目标网站初始化完成，共添加 {added_count} 个目标")
