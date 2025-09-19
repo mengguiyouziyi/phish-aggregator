@@ -625,10 +625,12 @@
         <label class="radio-item">
           <input type="radio" name="strategy" value="any" checked>
           <span class="radio-label">any（命中任一即判钓鱼）</span>
+          <button class="help-btn" onclick="showStrategyDescription('any')" title="查看详情">?</button>
         </label>
         <label class="radio-item">
           <input type="radio" name="strategy" value="weighted">
           <span class="radio-label">weighted（按概率加权）</span>
+          <button class="help-btn" onclick="showStrategyDescription('weighted')" title="查看详情">?</button>
         </label>
       </div>
     </div>
@@ -1338,6 +1340,88 @@ const descriptions = {
       }
     }
   }
+  },
+  "聚合策略": {
+    "any": {
+      title: "Any 策略（任一命中）",
+      description: "命中任一规则或模型即判为钓鱼",
+      details: {
+        overview: "当任意一个检测源（规则或模型）判定为钓鱼时，系统就将其标记为钓鱼网站。这是一种保守但安全的策略。",
+        features: [
+          "高安全性：宁可错杀，不可放过",
+          "快速响应：一旦发现风险立即报警",
+          "简单直接：逻辑清晰，易于理解",
+          "低容错性：对误报容忍度较低"
+        ],
+        usage: "适用于安全性要求高的场景，如金融机构、支付系统等。当用户安全优先于便利性时推荐使用。",
+        advantages: [
+          "最大程度保护用户安全",
+          "检测速度快，计算开销小",
+          "规则简单，易于维护",
+          "误报可以通过白名单机制缓解"
+        ],
+        disadvantages: [
+          "可能产生较多误报",
+          "对规则的准确性要求较高",
+          "可能影响用户体验",
+          "需要完善的人工审核机制"
+        ],
+        algorithm: "逻辑 OR 运算：if (rule1 || rule2 || model1 || model2) return 钓鱼",
+        use_cases: ["银行系统", "支付平台", "企业安全", "高价值账户"],
+        performance: "检测速度最快，资源占用最低",
+        recommendation: "建议配合白名单机制使用，以减少误报对正常业务的影响"
+      },
+      links: {
+        docs: "安全策略最佳实践",
+        wikipedia: "https://en.wikipedia.org/wiki/Phishing"
+      }
+    },
+    "weighted": {
+      title: "Weighted 策略（概率加权）",
+      description: "按检测概率加权计算最终结果",
+      details: {
+        overview: "综合考虑所有检测源的结果，根据每个检测源的概率值进行加权计算，当加权分数超过阈值时判定为钓鱼。",
+        features: [
+          "智能聚合：综合考虑多个检测源",
+          "概率加权：根据置信度计算最终分数",
+          "可调阈值：支持灵活的风险控制",
+          "平衡准确率：减少误报和漏报"
+        ],
+        usage: "适用于需要平衡准确性和召回率的场景。通过调整阈值可以控制检测的严格程度。",
+        algorithm: "加权平均：score = (w1×p1 + w2×p2 + ... + wn×pn) / (w1 + w2 + ... + wn)，if score > threshold 则为钓鱼",
+        parameters: [
+          "权重配置：不同检测源的重要性权重",
+          "概率阈值：判定钓鱼的最小分数",
+          "检测源选择：启用的规则和模型组合"
+        ],
+        advantages: [
+          "减少误报：综合判断提高准确性",
+          "灵活配置：可根据需求调整参数",
+          "智能平衡：在安全和便利性间找到平衡",
+          "数据驱动：基于概率的科学决策"
+        ],
+        disadvantages: [
+          "计算复杂度较高",
+          "需要合理设置权重参数",
+          "对异常概率值敏感",
+          "调试和优化相对复杂"
+        ],
+        optimization: [
+          "权重校准：基于历史数据优化权重",
+          "阈值调优：根据业务需求调整阈值",
+          "异常处理：对极端概率值的鲁棒处理",
+          "实时反馈：动态调整策略参数"
+        ],
+        use_cases: ["电商平台", "社交网络", "邮件系统", "内容平台"],
+        performance: "计算开销适中，准确率较高",
+        recommendation: "建议在不同业务场景下进行 A/B 测试，找到最优的参数配置"
+      },
+      links: {
+        ml_weighting: "机器学习集成方法",
+        ensemble_learning: "https://en.wikipedia.org/wiki/Ensemble_learning"
+      }
+    }
+  }
 };
 
 // 显示详细信息弹窗
@@ -1544,8 +1628,352 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+// 显示聚合策略说明弹窗
+function showStrategyDescription(strategy) {
+  const data = descriptions["聚合策略"] && descriptions["聚合策略"][strategy];
+  if (!data) return;
+
+  const modal = document.getElementById('descriptionModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+
+  modalTitle.textContent = data.title;
+
+  let content = '';
+
+  // 概述
+  if (data.details.overview) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">📋</span>
+          概述
+        </div>
+        <div class="modal-section-content">${data.details.overview}</div>
+      </div>
+    `;
+  }
+
+  // 特性
+  if (data.details.features && data.details.features.length > 0) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">⭐</span>
+          主要特性
+        </div>
+        <ul class="feature-list">
+          ${data.details.features.map(feature => `<li>${feature}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  // 使用方法
+  if (data.details.usage) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">🔧</span>
+          使用方法
+        </div>
+        <div class="modal-section-content">${data.details.usage}</div>
+      </div>
+    `;
+  }
+
+  // 算法
+  if (data.details.algorithm) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">⚙️</span>
+          算法原理
+        </div>
+        <div class="modal-section-content">
+          <code style="background: var(--bg-primary); padding: 0.5rem; border-radius: 4px; display: block; font-family: monospace; font-size: 0.875rem;">${data.details.algorithm}</code>
+        </div>
+      </div>
+    `;
+  }
+
+  // 优缺点
+  const hasProsCons = (data.details.advantages && data.details.advantages.length > 0) ||
+                     (data.details.disadvantages && data.details.disadvantages.length > 0);
+
+  if (hasProsCons) {
+    let prosConsContent = '';
+
+    if (data.details.advantages && data.details.advantages.length > 0) {
+      prosConsContent += `
+        <div style="margin-bottom: 1rem;">
+          <strong style="color: var(--success-color);">✅ 优势：</strong>
+          <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+            ${data.details.advantages.map(adv => `<li style="margin: 0.25rem 0;">${adv}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    if (data.details.disadvantages && data.details.disadvantages.length > 0) {
+      prosConsContent += `
+        <div>
+          <strong style="color: var(--danger-color);">❌ 劣势：</strong>
+          <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+            ${data.details.disadvantages.map(dis => `<li style="margin: 0.25rem 0;">${dis}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">⚖️</span>
+          优缺点分析
+        </div>
+        <div class="modal-section-content">${prosConsContent}</div>
+      </div>
+    `;
+  }
+
+  // 参数配置（仅 weighted 策略）
+  if (data.details.parameters && data.details.parameters.length > 0) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">🎛️</span>
+          参数配置
+        </div>
+        <ul class="feature-list">
+          ${data.details.parameters.map(param => `<li>${param}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  // 优化建议（仅 weighted 策略）
+  if (data.details.optimization && data.details.optimization.length > 0) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">🚀</span>
+          优化建议
+        </div>
+        <ul class="feature-list">
+          ${data.details.optimization.map(opt => `<li>${opt}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  // 应用场景
+  if (data.details.use_cases && data.details.use_cases.length > 0) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">🎯</span>
+          应用场景
+        </div>
+        <div class="modal-section-content">
+          ${data.details.use_cases.map(scenario =>
+            `<span class="status-tag tag-active" style="margin: 0.25rem; display: inline-block;">${scenario}</span>`
+          ).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // 性能表现
+  if (data.details.performance) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">⚡</span>
+          性能表现
+        </div>
+        <div class="modal-section-content">${data.details.performance}</div>
+      </div>
+    `;
+  }
+
+  // 使用建议
+  if (data.details.recommendation) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">💡</span>
+          使用建议
+        </div>
+        <div class="modal-section-content">${data.details.recommendation}</div>
+      </div>
+    `;
+  }
+
+  // 相关链接
+  if (data.links && Object.keys(data.links).length > 0) {
+    const linkItems = Object.entries(data.links).map(([key, url]) => {
+      const labels = {
+        docs: '技术文档',
+        wikipedia: '维基百科',
+        ml_weighting: '机器学习加权方法',
+        ensemble_learning: '集成学习'
+      };
+      return `
+        <div class="link-item">
+          <span class="icon">🔗</span>
+          <a href="${url}" target="_blank" rel="noopener noreferrer">${labels[key] || key}</a>
+          <span class="status-tag tag-external">外部链接</span>
+        </div>
+      `;
+    }).join('');
+
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">🔗</span>
+          相关链接
+        </div>
+        <div class="link-list">${linkItems}</div>
+      </div>
+    `;
+  }
+
+  modalBody.innerHTML = content;
+  modal.classList.add('active');
+}
+
 // 页面加载时初始化
 loadSources();
 </script>
-</body>
+<script>
+// 热重载修复 - 自动修复JavaScript函数问题
+(function() {
+  console.log('🔧 应用热重载修复...');
+
+  // 检查loadSources函数是否可用
+  if (typeof loadSources !== 'function') {
+    console.log('🔧 修复loadSources函数...');
+
+    // 创建修复版本的loadSources函数
+    window.loadSources = async function() {
+      try {
+        console.log('📋 加载规则和模型列表...');
+
+        const r1 = await fetch('/api/sources/rules').then(r => r.json());
+        const r2 = await fetch('/api/sources/models').then(r => r.json());
+
+        const rulesDiv = document.getElementById('rules');
+        const modelsDiv = document.getElementById('models');
+
+        if (rulesDiv) {
+          const rulesHTML = (r1.rules || []).map(x => {
+            const statusClass = x.installed ? 'status-success' : 'status-warning';
+            const statusText = x.installed ? '已安装' : '未安装';
+            return `
+              <label class="checkbox-item">
+                <input type="checkbox" name="rule" value="${x.key}" ${x.installed ? 'checked' : ''}>
+                <span class="checkbox-label">${x.name}</span>
+                <button class="help-btn" onclick="showDescription('规则源', '${x.key}')" title="查看详情">?</button>
+                <span class="status-badge ${statusClass}">${statusText}</span>
+              </label>
+            `;
+          }).join('');
+          rulesDiv.innerHTML = rulesHTML;
+        }
+
+        if (modelsDiv) {
+          const modelsHTML = (r2.models || []).map(x => {
+            const statusClass = x.installed ? 'status-success' : 'status-warning';
+            const statusText = x.installed ? '可用' : '未安装';
+            const isChecked = x.key === 'heuristic_baseline' ? 'checked' : '';
+            return `
+              <label class="checkbox-item">
+                <input type="checkbox" name="model" value="${x.key}" ${isChecked}>
+                <span class="checkbox-label">${x.name}</span>
+                <button class="help-btn" onclick="showDescription('模型', '${x.key}')" title="查看详情">?</button>
+                <span class="status-badge ${statusClass}">${statusText}</span>
+              </label>
+            `;
+          }).join('');
+          modelsDiv.innerHTML = modelsHTML;
+        }
+
+        console.log('✅ 列表加载完成');
+        return true;
+      } catch (error) {
+        console.error('❌ 加载失败:', error);
+        return false;
+      }
+    };
+
+    // 自动调用修复后的函数
+    setTimeout(() => {
+      console.log('🔧 自动调用修复的loadSources...');
+      window.loadSources();
+    }, 1000);
+  }
+
+  // 添加缺失的showDescription函数
+  if (typeof showDescription !== 'function') {
+    window.showDescription = function(type, key) {
+      const modal = document.getElementById('descriptionModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+
+      if (!modal || !modalTitle || !modalBody) return;
+
+      modalTitle.textContent = `${type} - ${key}`;
+      modalBody.innerHTML = `
+        <div class="modal-section">
+          <h3>详细信息</h3>
+          <p>这是 ${type} ${key} 的详细说明。</p>
+          <p>功能正在开发中，敬请期待完整内容。</p>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+  }
+
+  // 添加缺失的showStrategyDescription函数
+  if (typeof showStrategyDescription !== 'function') {
+    window.showStrategyDescription = function(strategy) {
+      const modal = document.getElementById('descriptionModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+
+      if (!modal || !modalTitle || !modalBody) return;
+
+      const strategyNames = {
+        'any': 'any（命中任一即判钓鱼）',
+        'weighted': 'weighted（按概率加权）'
+      };
+
+      modalTitle.textContent = `聚合策略 - ${strategyNames[strategy] || strategy}`;
+      modalBody.innerHTML = `
+        <div class="modal-section">
+          <h3>策略说明</h3>
+          <p>这是 <strong>${strategy}</strong> 策略的详细说明。</p>
+          <p>功能正在开发中，敬请期待完整内容。</p>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+  }
+
+  // 添加缺失的closeModal函数
+  if (typeof closeModal !== 'function') {
+    window.closeModal = function() {
+      const modal = document.getElementById('descriptionModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+    };
+  }
+
+  console.log('✅ 热重载修复应用完成');
+})();
+</script></body>
 </html>
