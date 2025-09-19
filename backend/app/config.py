@@ -40,21 +40,27 @@ RULE_SOURCES = {
         "type": "urllist",
         "urls": [
             "https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/master/phishing-links-ACTIVE-NOW.txt",
-            "https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/master/phishing-domains-ACTIVE.txt"
+            "https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/master/phishing-domains-ACTIVE.txt",
+            # 备用镜像源
+            "https://cdn.jsdelivr.net/gh/Phishing-Database/Phishing.Database@master/phishing-links-ACTIVE-NOW.txt",
+            "https://cdn.jsdelivr.net/gh/Phishing-Database/Phishing.Database@master/phishing-domains-ACTIVE.txt",
+            "https://gitcdn.xyz/repo/Phishing-Database/Phishing.Database/master/phishing-links-ACTIVE-NOW.txt",
+            "https://gitcdn.xyz/repo/Phishing-Database/Phishing.Database/master/phishing-domains-ACTIVE.txt"
         ],
         "parser": "phishing_database",
         "license": "MIT",
         "homepage": "https://github.com/Phishing-Database/Phishing.Database"
     },
     "cryptoscamdb": {
-        "name": "CryptoScamDB (API/Repo)",
+        "name": "CryptoScamDB (API)",
         "type": "domainlist",
         "urls": [
             "https://api.cryptoscamdb.org/v1/blacklist"
         ],
         "parser": "cryptoscamdb",
         "license": "MIT (varies by dataset)",
-        "homepage": "https://github.com/CryptoScamDB/blacklist"
+        "homepage": "https://github.com/CryptoScamDB/blacklist",
+        "note": "GitHub仓库文件路径可能已变更，目前仅依赖API"
     }
 }
 
