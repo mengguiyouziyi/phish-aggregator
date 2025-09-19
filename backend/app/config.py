@@ -85,9 +85,10 @@ MODEL_SOURCES = {
     },
     "phishpedia": {
         "name": "Phishpedia (视觉)",
-        "type": "git",
-        "repo": "https://github.com/lindsey98/Phishpedia",
-        "installed": False
+        "type": "local",
+        "installed": True,
+        "description": "基于视觉相似性的钓鱼网站检测",
+        "note": "使用ResNet50特征提取和Playwright截图"
     },
     "phishintention": {
         "name": "PhishIntention (视觉+交互)",

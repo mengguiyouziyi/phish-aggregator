@@ -7,6 +7,7 @@ from .routers.sources import router as sources_router
 from .routers.scan import router as scan_router
 from .routers.evaluate import router as eval_router
 from .routers.datasets import router as datasets_router
+from .routers.visual_detection import router as visual_router
 
 APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"
@@ -17,6 +18,7 @@ app.include_router(sources_router)
 app.include_router(scan_router)
 app.include_router(eval_router)
 app.include_router(datasets_router)
+app.include_router(visual_router)
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
