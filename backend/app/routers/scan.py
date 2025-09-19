@@ -33,4 +33,8 @@ def scan(req: ScanRequest):
             "models": preds,
             "agg": agg
         })
-    return {"results": results}
+    return {
+        "results": results,
+        "strategy": req.strategy,
+        "threshold": req.threshold
+    }
