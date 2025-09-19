@@ -1,0 +1,25 @@
+{
+  "name": "phish-aggregator",
+  "version": "1.0.0",
+  "description": "一个可直接部署的聚合式钓鱼网址检测 Web 项目。支持： - **规则/清单**：MetaMask eth-phishing-detect、polkadot{.js} phishing、CryptoScamDB、Phishing.Database 等； - **模型/工具**：URLTran、URLBERT、Phishpedia、PhishIntention、openSquat，以及你给出的示例/教学项目（SafeSurf、Phishing-URL-Detection、phishing_detector 等）； - **自由组合**：在 Web 界面选择启用哪些规则、模型，设置聚合策略； - **对比评测**：内置示例数据集，可一键运行评测，输出 Accuracy/Precision/Recall/F1、混淆矩阵等指标； - **一键脚本**：`scripts/` 内提供拉取规则/清单与模型/仓库的脚本； - **Docker**：提供最简 `docker-compose.yml` 直接跑起来。",
+  "main": "basic-test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mengguiyouziyi/phish-aggregator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/mengguiyouziyi/phish-aggregator/issues"
+  },
+  "homepage": "https://github.com/mengguiyouziyi/phish-aggregator#readme",
+  "devDependencies": {
+    "eslint": "^9.35.0",
+    "globals": "^16.4.0"
+  }
+}

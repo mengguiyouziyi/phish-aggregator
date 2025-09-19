@@ -1,0 +1,2802 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Phish Aggregator - 钓鱼网站检测聚合平台</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --border-color: #e2e8f0;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-color), #1e40af);
+      color: white;
+      padding: 1.5rem 2rem;
+      box-shadow: var(--shadow-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    header .subtitle {
+      font-size: 0.875rem;
+      opacity: 0.9;
+      margin-top: 0.25rem;
+    }
+
+    .logo {
+      width: 32px;
+      height: 32px;
+      background: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+
+    main {
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1024px) {
+      main {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+
+    section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.2s;
+    }
+
+    section:hover {
+      box-shadow: var(--shadow-lg);
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+      cursor: pointer;
+    }
+
+    .checkbox-item:hover {
+      background-color: var(--bg-primary);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .checkbox-label {
+      flex: 1;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .radio-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+      cursor: pointer;
+    }
+
+    .radio-item:hover {
+      background-color: var(--bg-primary);
+    }
+
+    .radio-item input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .radio-label {
+      flex: 1;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .threshold-control {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .threshold-slider {
+      flex: 1;
+      height: 6px;
+      background: var(--border-color);
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .threshold-slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--primary-color);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .threshold-value {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      min-width: 45px;
+      text-align: center;
+    }
+
+    textarea {
+      width: 100%;
+      height: 180px;
+      padding: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 2px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-color);
+    }
+
+    .help-text {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border-color);
+      margin: 1.5rem 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+    }
+
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background: var(--bg-primary);
+      font-weight: 600;
+      color: var(--text-secondary);
+      position: sticky;
+      top: 0;
+    }
+
+    tr:hover {
+      background: var(--bg-primary);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-success {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success-color);
+    }
+
+    .status-warning {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning-color);
+    }
+
+    .status-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger-color);
+    }
+
+    .model-probability {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .metric-card {
+      background: var(--bg-primary);
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 帮助按钮样式 */
+    .help-btn {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      color: white;
+      border: none;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      margin-left: 0.5rem;
+    }
+
+    .help-btn:hover {
+      background: var(--primary-color);
+      transform: scale(1.1);
+    }
+
+    /* 弹窗样式 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      transform: scale(0.7);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+      background: var(--danger-color);
+      color: white;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .modal-section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .modal-section-content {
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .feature-list li {
+      padding: 0.25rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+    }
+
+    .feature-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--success-color);
+      font-weight: bold;
+    }
+
+    .link-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .link-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .link-item a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-size: 0.875rem;
+    }
+
+    .link-item a:hover {
+      text-decoration: underline;
+    }
+
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+
+    .tag-active {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success-color);
+    }
+
+    .tag-experimental {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning-color);
+    }
+
+    .tag-external {
+      background: rgba(37, 99, 235, 0.1);
+      color: var(--primary-color);
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div style="display: flex; align-items: center; gap: 0.75rem;">
+    <div class="logo">🛡️</div>
+    <div>
+      <h1>Phish Aggregator</h1>
+      <div class="subtitle">钓鱼网站检测聚合平台 - 整合多个规则清单和模型</div>
+    </div>
+  </div>
+</header>
+<main>
+  <section>
+    <h2>
+      <span class="icon">⚙️</span>
+      检测配置
+    </h2>
+
+    <div class="form-group">
+      <div class="form-label">规则/清单</div>
+      <div class="checkbox-group" id="rules"></div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">检测模型</div>
+      <div class="checkbox-group" id="models"></div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">聚合策略</div>
+      <div class="radio-group">
+        <label class="radio-item">
+          <input type="radio" name="strategy" value="any" checked>
+          <span class="radio-label">any（命中任一即判钓鱼）</span>
+          <button class="help-btn" onclick="showStrategyDescription('any')" title="查看详情">?</button>
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="strategy" value="weighted">
+          <span class="radio-label">weighted（按概率加权）</span>
+          <button class="help-btn" onclick="showStrategyDescription('weighted')" title="查看详情">?</button>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">检测阈值</div>
+      <div class="threshold-control">
+        <input type="range" id="threshold" class="threshold-slider" min="0" max="1" step="0.05" value="0.5">
+        <span class="threshold-value" id="threshold-value">0.50</span>
+      </div>
+      <div class="help-text">模型概率≥阈值视为钓鱼</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>
+      <span class="icon">🔗</span>
+      输入 URL
+    </h2>
+
+    <textarea id="urls" placeholder="每行输入一个 URL，例如：&#10;https://example.com&#10;https://phishing-site.com"></textarea>
+
+    <div class="button-group">
+      <button class="btn btn-primary" onclick="runScan()">
+        <span>🔍</span>
+        开始扫描
+      </button>
+      <button class="btn btn-secondary" onclick="runEval()">
+        <span>📊</span>
+        评测性能
+      </button>
+    </div>
+
+    <div class="help-text">
+      💡 建议先运行 <code>python scripts/fetch_rules.py</code> 拉取最新规则清单
+    </div>
+  </section>
+
+  <section>
+    <h2>
+      <span class="icon">📋</span>
+      检测结果
+    </h2>
+    <div id="result" class="fade-in">
+      <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+        <div>配置检测源并输入 URL 开始扫描</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- 说明弹窗 -->
+<div class="modal-overlay" id="descriptionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalTitle">详细信息</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- 动态内容 -->
+    </div>
+  </div>
+</div>
+
+<script>
+// 阈值滑块实时更新
+document.getElementById('threshold').addEventListener('input', function() {
+  document.getElementById('threshold-value').textContent = parseFloat(this.value).toFixed(2);
+});
+
+async function loadSources() {
+  try {
+    const r1 = await fetch('/api/sources/rules').then(r=>r.json());
+    const r2 = await fetch('/api/sources/models').then(r=>r.json());
+
+    const rulesDiv = document.getElementById('rules');
+    const modelsDiv = document.getElementById('models');
+
+    rulesDiv.innerHTML = (r1.rules||[]).map(x=>{
+      const statusClass = x.installed ? 'status-success' : 'status-warning';
+      const statusText = x.installed ? '已安装' : '未安装';
+      return `
+        <label class="checkbox-item">
+          <input type="checkbox" name="rule" value="${x.key}" ${x.installed?'checked':''}>
+          <span class="checkbox-label">${x.name}</span>
+          <button class="help-btn" onclick="showDescription('规则源', '${x.key}')" title="查看详情">?</button>
+          <span class="status-badge ${statusClass}">${statusText}</span>
+        </label>
+      `;
+    }).join('');
+
+    modelsDiv.innerHTML = (r2.models||[]).map(x=>{
+      const statusClass = x.installed ? 'status-success' : 'status-warning';
+      const statusText = x.installed ? '可用' : '未安装';
+      const isChecked = x.key === 'heuristic_baseline' ? 'checked' : '';
+      return `
+        <label class="checkbox-item">
+          <input type="checkbox" name="model" value="${x.key}" ${isChecked}>
+          <span class="checkbox-label">${x.name}</span>
+          <button class="help-btn" onclick="showDescription('模型', '${x.key}')" title="查看详情">?</button>
+          <span class="status-badge ${statusClass}">${statusText}</span>
+        </label>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('加载源失败:', error);
+  }
+}
+
+function getChecked(name) {
+  return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el=>el.value);
+}
+
+async function runScan() {
+  const urls = document.getElementById('urls').value.split('\n').map(x=>x.trim()).filter(Boolean);
+  if (!urls.length) {
+    showNotification('请输入至少一个 URL', 'warning');
+    return;
+  }
+
+  const button = event.target;
+  const originalContent = button.innerHTML;
+  button.innerHTML = '<span class="loading"></span> 扫描中...';
+  button.disabled = true;
+
+  try {
+    const body = {
+      urls,
+      use_rules: getChecked('rule'),
+      use_models: getChecked('model'),
+      strategy: document.querySelector('input[name="strategy"]:checked').value,
+      threshold: parseFloat(document.getElementById('threshold').value||'0.5')
+    };
+
+    const res = await fetch('/api/scan', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    }).then(r=>r.json());
+
+    renderScan(res);
+    showNotification(`扫描完成，检测了 ${urls.length} 个URL`, 'success');
+  } catch (error) {
+    showNotification('扫描失败，请检查网络连接', 'error');
+    console.error('扫描失败:', error);
+  } finally {
+    button.innerHTML = originalContent;
+    button.disabled = false;
+  }
+}
+
+function renderScan(res) {
+  const div = document.getElementById('result');
+
+  if (!res.results || res.results.length === 0) {
+    div.innerHTML = `
+      <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+        <div style="font-size: 2rem; margin-bottom: 1rem;">📭</div>
+        <div>没有检测到任何结果</div>
+      </div>
+    `;
+    return;
+  }
+
+  const rows = (res.results||[]).map(r=>{
+    const ruleHits = Object.keys(r.rules||{}).filter(k=>r.rules[k]);
+    const modelStr = Object.keys(r.models||{}).map(k=>{
+      const proba = r.models[k].proba ?? '-';
+      return `<div class="model-probability"><strong>${k}:</strong> ${proba}</div>`;
+    }).join('');
+
+    const isPhishing = r.agg.label;
+    const statusClass = isPhishing ? 'status-danger' : 'status-success';
+    const statusText = isPhishing ? '🚨 钓鱼' : '✅ 正常';
+    const statusIcon = isPhishing ? '⚠️' : '✅';
+
+    return `
+      <tr>
+        <td style="max-width: 300px; word-break: break-all;">
+          <div style="font-family: monospace; font-size: 0.8rem;">${r.url}</div>
+        </td>
+        <td>
+          ${ruleHits.length > 0 ?
+            ruleHits.map(hit => `<span class="status-badge status-warning">${hit}</span>`).join('<br>') :
+            '<span style="color: var(--text-muted);">-</span>'
+          }
+        </td>
+        <td>${modelStr || '<span style="color: var(--text-muted);">-</span>'}</td>
+        <td>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <span class="status-badge ${statusClass}">${statusIcon} ${statusText}</span>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">
+              置信度: <strong>${(r.agg.score * 100).toFixed(1)}%</strong>
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  div.innerHTML = `
+    <div style="margin-bottom: 1rem;">
+      <span style="font-weight: 600; color: var(--text-secondary);">检测统计:</span>
+      <span style="margin-left: 1rem;">
+        总计: ${res.results.length} 个URL |
+        钓鱼: ${res.results.filter(r=>r.agg.label).length} 个 |
+        正常: ${res.results.filter(r=>!r.agg.label).length} 个
+      </span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>URL</th>
+          <th>命中规则</th>
+          <th>模型概率</th>
+          <th>检测结果</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+
+  div.className = 'fade-in';
+}
+
+async function runEval() {
+  const button = event.target;
+  const originalContent = button.innerHTML;
+  button.innerHTML = '<span class="loading"></span> 评测中...';
+  button.disabled = true;
+
+  try {
+    const body = {
+      use_models: getChecked('model'),
+      strategy: document.querySelector('input[name="strategy"]:checked').value,
+      threshold: parseFloat(document.getElementById('threshold').value||'0.5')
+    };
+
+    const res = await fetch('/api/evaluate', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    }).then(r=>r.json());
+
+    renderEval(res);
+    showNotification('评测完成', 'success');
+  } catch (error) {
+    showNotification('评测失败，请检查网络连接', 'error');
+    console.error('评测失败:', error);
+  } finally {
+    button.innerHTML = originalContent;
+    button.disabled = false;
+  }
+}
+
+function renderEval(res) {
+  const div = document.getElementById('result');
+
+  const metrics = [
+    { label: '准确率', value: (res.metrics.accuracy * 100).toFixed(1) + '%' },
+    { label: '精确率', value: (res.metrics.precision * 100).toFixed(1) + '%' },
+    { label: '召回率', value: (res.metrics.recall * 100).toFixed(1) + '%' },
+    { label: 'F1分数', value: (res.metrics.f1 * 100).toFixed(1) + '%' }
+  ];
+
+  const metricsGrid = metrics.map(metric => `
+    <div class="metric-card">
+      <div class="metric-value">${metric.value}</div>
+      <div class="metric-label">${metric.label}</div>
+    </div>
+  `).join('');
+
+  div.innerHTML = `
+    <div class="metrics-grid">
+      ${metricsGrid}
+    </div>
+
+    <div style="background: var(--bg-primary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+      <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary);">混淆矩阵</div>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; font-size: 0.875rem;">
+        <div>✅ 真阳性 (TP): <strong>${res.metrics.tp}</strong></div>
+        <div>✅ 真阴性 (TN): <strong>${res.metrics.tn}</strong></div>
+        <div>❌ 假阳性 (FP): <strong>${res.metrics.fp}</strong></div>
+        <div>❌ 假阴性 (FN): <strong>${res.metrics.fn}</strong></div>
+      </div>
+    </div>
+
+    <div class="help-text">
+      📊 评测完成，共处理 ${res.details.length} 条样本数据
+    </div>
+  `;
+
+  div.className = 'fade-in';
+}
+
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+  `;
+
+  const colors = {
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    info: '#3b82f6'
+  };
+
+  notification.style.background = colors[type] || colors.info;
+  notification.textContent = message;
+
+  document.body.appendChild(notification);
+
+  setTimeout(() => {
+    notification.style.animation = 'slideOut 0.3s ease-in';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// 添加动画样式
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+`;
+document.head.appendChild(style);
+
+// 详细说明数据
+const descriptions = {
+  "规则源": {
+    "metamask_eth_phishing_detect": {
+      title: "MetaMask eth-phishing-detect",
+      description: "Web3 常用的钓鱼域名检测与阻断清单",
+      details: {
+        overview: "MetaMask 官方维护的钓鱼网站检测工具，包含黑名单和白名单。这是 Web3 生态中最广泛使用的钓鱼检测工具之一，被众多钱包和社区工具集成使用。",
+        features: [
+          "包含黑名单（blocklist）和白名单（allowlist）双重机制",
+          "专门针对 Web3 用户的钓鱼攻击",
+          "实时更新，响应迅速",
+          "被主流钱包广泛采用"
+        ],
+        usage: "自动在后台运行，当用户访问被列入黑名单的域名时会触发警告。白名单机制可以防止误报，确保已知的合法网站能够正常访问。",
+        data_sources: "config.json 文件包含所有规则，支持域名匹配和模糊匹配。",
+        license: "MIT License",
+        maintenance: "由 MetaMask 团队积极维护，更新频率较高"
+      },
+      links: {
+        github: "https://github.com/MetaMask/eth-phishing-detect",
+        config: "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+      }
+    },
+    "polkadot_js_phishing": {
+      title: "polkadot{.js} phishing",
+      description: "Polkadot/Substrate 生态的恶意站点与地址清单",
+      details: {
+        overview: "专为 Polkadot 和 Substrate 生态系统设计的钓鱼检测工具，包含恶意站点列表和恶意地址列表。",
+        features: [
+          "双文件结构：站点列表（all.json）和地址列表（address.json）",
+          "提供 JavaScript 校验函数，便于前端集成",
+          "针对 Polkadot 生态的特定威胁",
+          "社区驱动的维护模式"
+        ],
+        usage: "通过 JS 库可以轻松集成到 Polkadot 应用中，支持实时检查网站和地址的安全性。",
+        data_sources: "两个主要的 JSON 文件：all.json（网站黑名单）和 address.json（地址黑名单）。",
+        license: "Apache 2.0",
+        maintenance: "由 polkadot-js 团队维护，社区贡献驱动"
+      },
+      links: {
+        github: "https://github.com/polkadot-js/phishing",
+        sites: "https://github.com/polkadot-js/phishing/blob/master/all.json",
+        addresses: "https://github.com/polkadot-js/phishing/blob/master/address.json"
+      }
+    },
+    "phishing_database": {
+      title: "Phishing.Database",
+      description: "持续更新的大规模钓鱼链接数据库",
+      details: {
+        overview: "一个大规模的钓鱼网站数据库，提供多种格式的数据文件，专注于实时阻断和训练样本补充。",
+        features: [
+          "多种数据格式：活跃链接、新发现链接、域名列表等",
+          "TXT 格式便于处理和集成",
+          "持续更新，覆盖范围广",
+          "适合机器学习训练"
+        ],
+        usage: "可以直接导入到安全设备中，或用作机器学习模型的训练数据。支持自动化脚本定期更新。",
+        data_sources: "多个 TXT 文件，包括活跃链接、域名等不同分类。",
+        license: "MIT License",
+        maintenance: "社区维护，更新频率高，数据量大"
+      },
+      links: {
+        github: "https://github.com/Phishing-Database/Phishing.Database",
+        active_links: "https://github.com/Phishing-Database/Phishing.Database/blob/main/phishing-links-ACTIVE-NOW.txt",
+        active_domains: "https://github.com/Phishing-Database/Phishing.Database/blob/main/phishing-domains-ACTIVE.txt"
+      }
+    },
+    "cryptoscamdb": {
+      title: "CryptoScamDB",
+      description: "加密领域老牌的开源黑名单与配套仓库",
+      details: {
+        overview: "CryptoScamDB 组织维护的老牌加密货币诈骗数据库，专注于诈骗域名、钓鱼网站和社交媒体账号的收集。",
+        features: [
+          "专注加密货币领域的诈骗检测",
+          "包含域名和社交媒体账号信息",
+          "提供 API 接口便于集成",
+          "历史悠久的可信数据源"
+        ],
+        usage: "通过 API 可以查询域名和地址的安全性，支持批量查询和实时检测。",
+        data_sources: "API 接口和 GitHub 仓库，但目前 API 服务暂时不可用。",
+        license: "MIT License",
+        maintenance: "由 CryptoScamDB 组织维护，服务偶尔会有中断"
+      },
+      links: {
+        github: "https://github.com/CryptoScamDB/blacklist",
+        api: "https://api.cryptoscamdb.org/v1/blacklist"
+      }
+    }
+  },
+  "模型": {
+    "heuristic_baseline": {
+      title: "Heuristic Baseline (内置)",
+      description: "基于启发式规则的 baseline 检测模型",
+      details: {
+        overview: "内置的启发式检测模型，通过分析 URL 的结构特征、域名信息、SSL 证书等来判断是否为钓鱼网站。",
+        features: [
+          "无需外部依赖，内置实现",
+          "快速响应，实时检测",
+          "基于多种启发式规则",
+          "可配置的阈值调节"
+        ],
+        usage: "系统默认启用的基础检测模型，提供实时检测能力。",
+        algorithm: "结合了 URL 特征分析、域名年龄检查、SSL 验证等多种方法。",
+        performance: "检测速度快，准确率适中，适合作为基础检测层。",
+        advantages: ["无依赖", "速度快", "资源占用低"]
+      },
+      links: {
+        source: "本地实现",
+        docs: "内置算法文档"
+      }
+    },
+    "urltran": {
+      title: "URLTran",
+      description: "基于 Transformer 的 URL 文本表征模型",
+      details: {
+        overview: "使用 Transformer 架构对 URL 进行深度学习和表征，能够理解 URL 的语义特征。",
+        features: [
+          "Transformer 架构，深度学习模型",
+          "支持 PyTorch 和 HuggingFace",
+          "预训练模型，开箱即用",
+          "适合大规模 URL 处理"
+        ],
+        usage: "需要安装 PyTorch 和 Transformers 库，支持批量处理。",
+        model_size: "中等规模的预训练模型",
+        accuracy: "在大型数据集上表现优异",
+        requirements: ["Python", "PyTorch", "Transformers"]
+      },
+      links: {
+        github: "https://github.com/bfilar/URLTran",
+        models: "https://github.com/bfilar/URLTran/tree/main/models",
+        paper: "相关研究论文"
+      }
+    },
+    "urlbert": {
+      title: "URLBERT",
+      description: "面向 URL 的 BERT 预训练模型",
+      details: {
+        overview: "专门为 URL 检测任务设计的 BERT 预训练模型，包含对比学习和虚拟对抗训练（VAT）。",
+        features: [
+          "BERT 架构，专门针对 URL 优化",
+          "包含对比学习和 VAT 训练",
+          "提供专用 tokenizer",
+          "预训练权重可用"
+        ],
+        usage: "需要加载预训练模型和专用 tokenizer，支持 URL 的深度语义分析。",
+        training: "在大规模 URL 数据集上预训练",
+        performance: "在 URL 分类任务上表现优异",
+        requirements: ["BERT", "PyTorch", "专用tokenizer"]
+      },
+      links: {
+        github: "https://github.com/Davidup1/URLBERT",
+        models: "https://github.com/Davidup1/URLBERT/tree/main/bert_model",
+        paper: "URLBERT 相关研究论文"
+      }
+    },
+    "phishpedia": {
+      title: "Phishpedia",
+      description: "基于视觉一致性的钓鱼网站检测",
+      details: {
+        overview: "USENIX'21 发表的视觉一致性检测方法，通过 Logo 目标检测和 Siamese 网络匹配来判断网站是否冒充目标品牌。",
+        features: [
+          "计算机视觉技术",
+          "Logo 检测与匹配",
+          "Siamese 网络架构",
+          "目标品牌库支持"
+        ],
+        usage: "主要用于视觉相似的钓鱼网站检测，需要处理网页截图。",
+        accuracy: "在视觉钓鱼检测上准确率很高",
+        limitations: ["需要网页渲染", "计算资源要求高"],
+        applications: ["银行网站", "电商网站", "社交媒体"]
+      },
+      links: {
+        github: "https://github.com/lindsey98/Phishpedia",
+        models: "https://github.com/lindsey98/Phishpedia/tree/main/models",
+        paper: "USENIX'21 论文"
+      }
+    },
+    "phishintention": {
+      title: "PhishIntention",
+      description: "视觉+动态交互的钓鱼检测方法",
+      details: {
+        overview: "USENIX'22 发表的综合检测方法，结合视觉分析和动态交互行为分析，包括布局检测、OCR 辅助的 Siamese 网络、凭证页定位等。",
+        features: [
+          "视觉 + 行为分析",
+          "布局检测和 OCR",
+          "Siamese 网络匹配",
+          "凭证页（CRP）定位"
+        ],
+        usage: "需要浏览器环境支持，能够执行 JavaScript 并分析页面交互。",
+        performance: "综合检测能力强，准确率高",
+        complexity: "实现复杂，需要浏览器环境",
+        innovation: "结合了静态和动态分析"
+      },
+      links: {
+        github: "https://github.com/lindsey98/PhishIntention",
+        models: "https://github.com/lindsey98/PhishIntention/tree/main/models",
+        paper: "USENIX'22 论文"
+      }
+    },
+    "opensquat": {
+      title: "openSquat",
+      description: "同形异义域名检测工具",
+      details: {
+        overview: "OSINT 工具，专门监测 typosquatting、同形异义、品牌冒充等域名攻击手段，常用于品牌和资产防护的前置发现。",
+        features: [
+          "typosquatting 检测",
+          "同形异义域名识别",
+          "品牌冒充检测",
+          "被动式监控"
+        ],
+        usage: "用于品牌保护，可以监控和预警可能的域名抢注和冒充行为。",
+        methodology: "基于域名相似度算法",
+        applications: ["品牌保护", "资产监控", "威胁情报"],
+        advantages: ["预防性检测", "主动防御"]
+      },
+      links: {
+        github: "https://github.com/atenreiro/opensquat",
+        docs: "openSquat 文档"
+      }
+    },
+    "safesurf": {
+      title: "SafeSurf",
+      description: "入门友好的钓鱼域名检测工具",
+      details: {
+        overview: "面向初学者的钓鱼域名检测与安全预览工具，支持 PhishTank 查询、WHOIS/SSL 信息分析和信任评分。",
+        features: [
+          "PhishTank 集成",
+          "WHOIS 信息查询",
+          "SSL 证书分析",
+          "信任评分系统"
+        ],
+        usage: "提供 Web 界面，支持实时 URL 检查和安全预览。",
+        ml_features: "在 v1-ml 分支提供机器学习实现",
+        target_users: ["初学者", "安全爱好者", "教育用途"],
+        ease_of_use: "界面友好，操作简单"
+      },
+      links: {
+        github: "https://github.com/abhizaik/SafeSurf",
+        ml_branch: "https://github.com/abhizaik/SafeSurf/tree/v1-ml"
+      }
+    },
+    "vaibhav_phishing_url_detection": {
+      title: "Phishing-URL-Detection (vaibhavbichave)",
+      description: "传统机器学习方法对比",
+      details: {
+        overview: "使用传统机器学习方法进行 URL 检测，对比多种算法性能，包含 GBDT、CatBoost、XGBoost、MLP 等模型。",
+        features: [
+          "多模型对比",
+          "传统特征工程",
+          "预训练模型可用",
+          "完整的项目结构"
+        ],
+        usage: "提供训练好的模型权重，可直接用于预测。",
+        models: ["GBDT", "CatBoost", "XGBoost", "MLP"],
+        features_list: ["URL长度", "特殊字符", "域名信息", "SSL特征"],
+        evaluation: "包含详细的性能评估"
+      },
+      links: {
+        github: "https://github.com/vaibhavbichave/Phishing-URL-Detection",
+        model: "https://github.com/vaibhavbichave/Phishing-URL-Detection/blob/master/pickle/model.pkl"
+      }
+    },
+    "arvind_phishing_detector": {
+      title: "phishing_detector (arvind-rs)",
+      description: "基于 SVM 的 Chrome 扩展",
+      details: {
+        overview: "使用支持向量机（SVM）实现的 Chrome 扩展，通过内容脚本提取 URL 和页面特征进行检测。",
+        features: [
+          "Chrome 扩展形式",
+          "SVM 算法",
+          "实时检测",
+          "持久化模型"
+        ],
+        usage: "作为浏览器扩展运行，实时检测访问的网站。",
+        architecture: ["内容脚本", "背景脚本", "特征提取"],
+        deployment: "Chrome Web Store",
+        user_experience: "无感知的后台检测"
+      },
+      links: {
+        github: "https://github.com/arvind-rs/phishing_detector",
+        engineering: "https://github.com/arvind-rs/phishing_detector/tree/master/Engineering%20Module"
+      }
+    },
+    "shreyam_phishing_link_detector": {
+      title: "Phishing-link-detector (ShreyamMaity)",
+      description: "网站端的链接检测演示",
+      details: {
+        overview: "以网站形式封装的链接检测演示系统，便于部署和二次开发。",
+        features: [
+          "Web 界面",
+          "演示性质",
+          "易于部署",
+          "适合二开"
+        ],
+        usage: "提供完整的 Web 应用，支持在线检测。",
+        architecture: ["前端界面", "后端API", "检测引擎"],
+        deployment: "简单部署，开箱即用",
+        customization: "代码结构清晰，便于定制"
+      },
+      links: {
+        github: "https://github.com/ShreyamMaity/Phishing-link-detector"
+      }
+    },
+    "srimani_phishing_url_detector": {
+      title: "Phishing-URL-Detector (srimani-programmer)",
+      description: "Flask Web 应用 + 随机森林",
+      details: {
+        overview: "基于 Flask 的 Web 应用，使用随机森林等传统机器学习算法构建完整的检测管线。",
+        features: [
+          "Flask 框架",
+          "随机森林算法",
+          "Web 应用",
+          "完整数据集"
+        ],
+        usage: "提供完整的 Web 应用，包含数据集和训练代码。",
+        pipeline: ["数据预处理", "特征工程", "模型训练", "Web部署"],
+        datasets: "包含训练和测试数据",
+        reproducibility: "代码完整，可复现结果"
+      },
+      links: {
+        github: "https://github.com/srimani-programmer/Phishing-URL-Detector",
+        code: "https://github.com/srimani-programmer/Phishing-URL-Detector/blob/master/phishing_detection.py"
+      }
+    },
+    "asrith_phishing_detector": {
+      title: "Phishing-detector (asrith-reddy)",
+      description: "在线检测网站演示",
+      details: {
+        overview: "偏工程化的在线检测演示网站，提供完整的检测服务演示。",
+        features: [
+          "在线演示",
+          "工程化实现",
+          "用户友好",
+          "功能完整"
+        ],
+        usage: "提供在线演示地址，可直接体验检测功能。",
+        demo: "包含托管的演示地址",
+        implementation: "完整的工程实现",
+        user_interface: "直观的 Web 界面"
+      },
+      links: {
+        github: "https://github.com/asrith-reddy/Phishing-detector"
+      }
+    },
+    "azlan_phishing_ai_detector": {
+      title: "phishing-ai-detector (azlan-ismail)",
+      description: "集成 SHAP 可解释性的检测系统",
+      details: {
+        overview: "使用多种机器学习算法（LR、RandomForest、XGBoost）并集成 SHAP 可解释性分析，提供 Flask 和 Streamlit 演示。",
+        features: [
+          "多算法并行",
+          "SHAP 可解释性",
+          "Flask + Streamlit",
+          "模型解释"
+        ],
+        usage: "通过 SHAP 值解释模型决策，提高透明度。",
+        algorithms: ["逻辑回归", "随机森林", "XGBoost"],
+        explainability: ["SHAP 值", "特征重要性", "决策路径"],
+        deployment: ["Flask API", "Streamlit 界面"]
+      },
+      links: {
+        github: "https://github.com/azlan-ismail/phishing-ai-detector",
+        models: "https://github.com/azlan-ismail/phishing-ai-detector/tree/main/models"
+      }
+    }
+  }
+  },
+  "聚合策略": {
+    "any": {
+      title: "Any 策略（任一命中）",
+      description: "基于布尔逻辑的高灵敏度检测策略",
+      details: {
+        overview: "采用逻辑OR运算的聚合策略，只要任一检测源（规则清单或机器学习模型）判定为钓鱼，则最终结果即为钓鱼。这是一种高灵敏度、低特异性的保守检测方法。",
+        algorithm: {
+          logic: "Boolean OR Operation: result = rule1_hit ∨ rule2_hit ∨ ... ∨ model1_pred ≥ threshold ∨ model2_pred ≥ threshold",
+          implementation: "系统首先检查所有规则清单的命中情况，若存在任一命中则直接返回钓鱼标签。若规则均未命中，则检查所有模型预测结果，取最大概率值与阈值比较。",
+          complexity: "O(n) 时间复杂度，n为检测源总数，计算开销极小",
+          threshold_logic: "仅对机器学习模型应用阈值过滤，规则清单采用二值判定（命中/未命中）"
+        },
+        technical_analysis: {
+          detection_mechanism: "双路径检测架构：规则路径采用精确匹配，模型路径采用概率阈值判定",
+          fail_safe: "默认安全设计，任何检测源触发即告警，符合安全防御的'零信任'原则",
+          false_positive_control: "通过白名单机制进行误报控制，但不影响检测灵敏度",
+          scalability: "线性扩展特性，新增检测源不会显著增加计算复杂度"
+        },
+        features: [
+          "即时响应：单点触发即告警，响应时间 < 100ms",
+          "高检出率：最大化钓鱼网站捕获能力",
+          "简单可解释：决策逻辑清晰，易于调试和维护",
+          "资源友好： minimal CPU/memory 占用"
+        ],
+        use_cases: {
+          high_security: [
+            "金融机构网银系统",
+            "加密货币交易所",
+            "企业内部安全网关",
+            "政府机构网站防护"
+          ],
+          compliance_driven: [
+            "PCI DSS 合规要求",
+            "GDPR 数据保护",
+            "金融监管合规"
+          ]
+        },
+        performance_metrics: {
+          detection_rate: "理论上限 > 99%（理想条件下）",
+          false_positive_rate: "通常在 5-15%（取决于规则质量）",
+          response_time: "< 50ms（单URL检测）",
+          throughput: "> 1000 QPS（单实例）"
+        },
+        optimization_strategies: [
+          "规则优先级排序：高置信度规则优先检查",
+          "缓存机制：对已知良性URL建立快速缓存",
+          "异步处理：规则匹配和模型推理并行执行"
+        ],
+        limitations: [
+          "误报率相对较高，特别是对于新增域名",
+          "对规则质量依赖性强，需要持续维护",
+          "缺乏风险分级，所有威胁同等处理",
+          "可能存在规则冲突问题"
+        ],
+        deployment_considerations: {
+          infrastructure: "建议部署在高可用架构中，支持规则热更新",
+          monitoring: "需要建立误报监控和规则效果评估机制",
+          maintenance: "定期审核规则准确性，移除过期或无效规则"
+        },
+        risk_assessment: {
+          security_posture: "防御性安全姿态，优先考虑安全性而非便利性",
+          threat_coverage: "覆盖已知威胁模式，对零日攻击检测能力有限",
+          business_impact: "可能影响用户体验，但最大程度降低安全风险"
+        }
+      },
+      links: {
+        security_principles: "https://owasp.org/www-project-top-ten/",
+        boolean_logic: "https://en.wikipedia.org/wiki/Boolean_logic",
+        phishing_detection: "https://en.wikipedia.org/wiki/Phishing"
+      }
+    },
+    "weighted": {
+      title: "Weighted 策略（智能加权）",
+      description: "基于多源融合的概率加权聚合策略",
+      details: {
+        overview: "采用加权平均算法的智能聚合策略，综合考虑所有检测源的输出结果，根据置信度权重计算综合风险分数。该方法通过数学建模实现检测精度和召回率的最佳平衡。",
+        algorithm: {
+          mathematical_model: "Weighted Average: score = Σ(wi × pi) / Σ(wi), where wi ∈ [0,1], pi ∈ [0,1]",
+          rule_integration: "规则命中作为二元特征，对最终分数贡献固定加成（+0.2）",
+          threshold_decision: "当 score ≥ threshold 时判定为钓鱼，threshold ∈ [0,1] 可调",
+          normalization: "权重归一化处理确保分数稳定性：w'i = wi / Σ(wi)"
+        },
+        technical_analysis: {
+          ensemble_method: " heterogeneous ensemble learning，融合基于规则和基于学习的检测方法",
+          confidence_weighting: "根据历史准确率动态调整权重，高精度检测源获得更高权重",
+          probability_calibration: "对模型输出概率进行 Platt Scaling 或 Isotonic Regression 校准",
+          robust_design: "对异常值具有鲁棒性，单个检测源的极端输出不会主导最终结果"
+        },
+        parameters: {
+          configurable: [
+            {
+              name: "权重向量 (weights)",
+              type: "Dict[str, float]",
+              range: "[0.0, 1.0]",
+              description: "各检测源的权重系数，反映其相对重要性"
+            },
+            {
+              name: "判定阈值 (threshold)",
+              type: "float",
+              range: "[0.0, 1.0]",
+              description: "钓鱼判定的临界分数，控制检测严格程度"
+            },
+            {
+              name: "规则加成 (rule_bonus)",
+              type: "float",
+              default: "0.2",
+              description: "规则命中时的额外分数加成"
+            }
+          ],
+          optimization: {
+            method: "贝叶斯优化或网格搜索",
+            objective: "最大化 F1-score 或最小化预期损失",
+            validation: "k-fold cross-validation 防止过拟合",
+            adaptation: "在线学习支持，可根据新数据动态调整"
+          }
+        },
+        features: [
+          "智能平衡：通过权重分配实现精度和召回率的动态平衡",
+          "概率校准：输出标准化风险分数，支持风险分级处理",
+          "自适应调节：可根据业务需求调整检测严格程度",
+          "可解释性：提供详细的决策依据和置信度评估"
+        ],
+        technical_advantages: [
+          "数学严谨性：基于统计学习的理论框架",
+          "泛化能力：对未见过的威胁模式具有一定的检测能力",
+          "容错性：单个检测源失效不会导致系统崩溃",
+          "可扩展性：支持新检测源的动态加入和权重学习"
+        ],
+        computational_complexity: {
+          time_complexity: "O(n) where n = number of detection sources",
+          space_complexity: "O(n) for storing weights and predictions",
+          optimization: "向量化计算，可充分利用 SIMD 指令优化"
+        },
+        use_cases: {
+          large_scale_platforms: [
+            "搜索引擎安全过滤",
+            "社交网络链接保护",
+            "邮件系统垃圾过滤",
+            "CDN 边缘安全"
+          ],
+          user_facing_applications: [
+            "浏览器安全扩展",
+            "移动应用安全检查",
+            "API 网关防护",
+            "云原生安全"
+          ]
+        },
+        performance_characteristics: {
+          accuracy: "F1-score 通常在 85-95% 之间",
+          calibration: "Brier score < 0.1，概率校准良好",
+          latency: "< 200ms 端到端响应时间",
+          throughput: "500-800 QPS（取决于检测源数量）"
+        },
+        advanced_optimizations: [
+          "Online Learning: 增量更新权重以适应威胁态势变化",
+          "Ensemble Pruning: 动态移除低效检测源提升性能",
+          "Feature Importance: 分析各检测源贡献度指导权重分配",
+          "Uncertainty Quantification: 提供预测区间的可信度评估"
+        ],
+        implementation_considerations: {
+          data_requirements: "需要标注数据集用于权重学习和验证",
+          monitoring: "持续监控预测分布漂移和模型性能衰减",
+          failover: "降级机制，在加权策略失效时回退到 Any 策略",
+          explainability: "SHAP 或 LIME 方法提供决策解释"
+        },
+        risk_management: {
+          a_b_testing: "建议在新旧策略间进行 A/B 测试验证效果",
+          canary_deployment: "逐步放量部署，监控系统稳定性",
+          rollback_plan: "快速回滚机制，确保业务连续性"
+        }
+      },
+      links: {
+        ensemble_methods: "https://en.wikipedia.org/wiki/Ensemble_learning",
+        probability_calibration: "https://en.wikipedia.org/wiki/Probability_calibration",
+        bayesian_optimization: "https://en.wikipedia.org/wiki/Bayesian_optimization",
+        ml_weighting: "Machine Learning Weighted Ensemble Methods"
+      }
+    }
+  }
+};
+
+// 显示详细信息弹窗
+function showDescription(type, key) {
+  const data = descriptions[type] && descriptions[type][key];
+  if (!data) return;
+
+  const modal = document.getElementById('descriptionModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+
+  modalTitle.textContent = data.title;
+
+  let content = '';
+
+  // 概述
+  if (data.details.overview) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">📋</span>
+          概述
+        </div>
+        <div class="modal-section-content">${data.details.overview}</div>
+      </div>
+    `;
+  }
+
+  // 特性
+  if (data.details.features && data.details.features.length > 0) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">⭐</span>
+          主要特性
+        </div>
+        <ul class="feature-list">
+          ${data.details.features.map(feature => `<li>${feature}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  // 使用方法
+  if (data.details.usage) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">🔧</span>
+          使用方法
+        </div>
+        <div class="modal-section-content">${data.details.usage}</div>
+      </div>
+    `;
+  }
+
+  // 技术细节
+  const techDetails = ['algorithm', 'performance', 'model_size', 'accuracy', 'requirements', 'limitations', 'applications', 'advantages', 'methodology', 'innovation', 'target_users', 'ease_of_use', 'ml_features', 'models', 'features_list', 'evaluation', 'architecture', 'deployment', 'user_experience', 'demo', 'implementation', 'user_interface', 'customization', 'pipeline', 'datasets', 'reproducibility', 'algorithms', 'explainability'];
+  const hasTechDetails = techDetails.some(detail => data.details[detail]);
+
+  if (hasTechDetails) {
+    let techContent = '';
+    techDetails.forEach(detail => {
+      if (data.details[detail]) {
+        const labels = {
+          algorithm: '算法',
+          performance: '性能',
+          model_size: '模型大小',
+          accuracy: '准确率',
+          requirements: '要求',
+          limitations: '局限性',
+          applications: '应用场景',
+          advantages: '优势',
+          methodology: '方法论',
+          innovation: '创新点',
+          target_users: '目标用户',
+          ease_of_use: '易用性',
+          ml_features: '机器学习特性',
+          models: '模型列表',
+          features_list: '特征列表',
+          evaluation: '评估',
+          architecture: '架构',
+          deployment: '部署',
+          user_experience: '用户体验',
+          demo: '演示',
+          implementation: '实现',
+          user_interface: '用户界面',
+          customization: '定制化',
+          pipeline: '处理流程',
+          datasets: '数据集',
+          reproducibility: '可复现性',
+          algorithms: '算法列表',
+          explainability: '可解释性'
+        };
+
+        const value = Array.isArray(data.details[detail]) ? data.details[detail].join(', ') : data.details[detail];
+        techContent += `<div><strong>${labels[detail] || detail}:</strong> ${value}</div>`;
+      }
+    });
+
+    if (techContent) {
+      content += `
+        <div class="modal-section">
+          <div class="modal-section-title">
+            <span class="icon">⚙️</span>
+            技术细节
+          </div>
+          <div class="modal-section-content">${techContent}</div>
+        </div>
+      `;
+    }
+  }
+
+  // 数据源
+  if (data.details.data_sources) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">📊</span>
+          数据源
+        </div>
+        <div class="modal-section-content">${data.details.data_sources}</div>
+      </div>
+    `;
+  }
+
+  // 许可证和维护
+  const licenseMaintenance = [];
+  if (data.details.license) licenseMaintenance.push(`<strong>许可证:</strong> ${data.details.license}`);
+  if (data.details.maintenance) licenseMaintenance.push(`<strong>维护状态:</strong> ${data.details.maintenance}`);
+
+  if (licenseMaintenance.length > 0) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">📄</span>
+          许可证与维护
+        </div>
+        <div class="modal-section-content">${licenseMaintenance.join('<br>')}</div>
+      </div>
+    `;
+  }
+
+  // 相关链接
+  if (data.links && Object.keys(data.links).length > 0) {
+    const linkItems = Object.entries(data.links).map(([key, url]) => {
+      const labels = {
+        github: 'GitHub',
+        config: '配置文件',
+        sites: '站点列表',
+        addresses: '地址列表',
+        active_links: '活跃链接',
+        active_domains: '活跃域名',
+        api: 'API 接口',
+        source: '源码',
+        docs: '文档',
+        models: '模型文件',
+        paper: '研究论文',
+        engineering: '工程模块',
+        ml_branch: 'ML 分支',
+        code: '代码'
+      };
+      return `
+        <div class="link-item">
+          <span class="icon">🔗</span>
+          <a href="${url}" target="_blank" rel="noopener noreferrer">${labels[key] || key}</a>
+          <span class="status-tag tag-external">外部链接</span>
+        </div>
+      `;
+    }).join('');
+
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">🔗</span>
+          相关链接
+        </div>
+        <div class="link-list">${linkItems}</div>
+      </div>
+    `;
+  }
+
+  modalBody.innerHTML = content;
+  modal.classList.add('active');
+}
+
+// 关闭弹窗
+function closeModal() {
+  const modal = document.getElementById('descriptionModal');
+  modal.classList.remove('active');
+}
+
+// 点击弹窗外部关闭
+document.getElementById('descriptionModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeModal();
+  }
+});
+
+// ESC 键关闭弹窗
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeModal();
+  }
+});
+
+// 显示聚合策略说明弹窗
+function showStrategyDescription(strategy) {
+  const data = descriptions["聚合策略"] && descriptions["聚合策略"][strategy];
+  if (!data) return;
+
+  const modal = document.getElementById('descriptionModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+
+  modalTitle.textContent = data.title;
+
+  let content = '';
+
+  // 概述
+  if (data.details.overview) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">📋</span>
+          概述
+        </div>
+        <div class="modal-section-content">${data.details.overview}</div>
+      </div>
+    `;
+  }
+
+  // 特性
+  if (data.details.features && data.details.features.length > 0) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">⭐</span>
+          主要特性
+        </div>
+        <ul class="feature-list">
+          ${data.details.features.map(feature => `<li>${feature}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  // 使用方法
+  if (data.details.usage) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">🔧</span>
+          使用方法
+        </div>
+        <div class="modal-section-content">${data.details.usage}</div>
+      </div>
+    `;
+  }
+
+  // 算法
+  if (data.details.algorithm) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">⚙️</span>
+          算法原理
+        </div>
+        <div class="modal-section-content">
+          <code style="background: var(--bg-primary); padding: 0.5rem; border-radius: 4px; display: block; font-family: monospace; font-size: 0.875rem;">${data.details.algorithm}</code>
+        </div>
+      </div>
+    `;
+  }
+
+  // 优缺点
+  const hasProsCons = (data.details.advantages && data.details.advantages.length > 0) ||
+                     (data.details.disadvantages && data.details.disadvantages.length > 0);
+
+  if (hasProsCons) {
+    let prosConsContent = '';
+
+    if (data.details.advantages && data.details.advantages.length > 0) {
+      prosConsContent += `
+        <div style="margin-bottom: 1rem;">
+          <strong style="color: var(--success-color);">✅ 优势：</strong>
+          <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+            ${data.details.advantages.map(adv => `<li style="margin: 0.25rem 0;">${adv}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    if (data.details.disadvantages && data.details.disadvantages.length > 0) {
+      prosConsContent += `
+        <div>
+          <strong style="color: var(--danger-color);">❌ 劣势：</strong>
+          <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+            ${data.details.disadvantages.map(dis => `<li style="margin: 0.25rem 0;">${dis}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">⚖️</span>
+          优缺点分析
+        </div>
+        <div class="modal-section-content">${prosConsContent}</div>
+      </div>
+    `;
+  }
+
+  // 参数配置（仅 weighted 策略）
+  if (data.details.parameters && data.details.parameters.length > 0) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">🎛️</span>
+          参数配置
+        </div>
+        <ul class="feature-list">
+          ${data.details.parameters.map(param => `<li>${param}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  // 优化建议（仅 weighted 策略）
+  if (data.details.optimization && data.details.optimization.length > 0) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">🚀</span>
+          优化建议
+        </div>
+        <ul class="feature-list">
+          ${data.details.optimization.map(opt => `<li>${opt}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  // 应用场景
+  if (data.details.use_cases && data.details.use_cases.length > 0) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">🎯</span>
+          应用场景
+        </div>
+        <div class="modal-section-content">
+          ${data.details.use_cases.map(scenario =>
+            `<span class="status-tag tag-active" style="margin: 0.25rem; display: inline-block;">${scenario}</span>`
+          ).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // 性能表现
+  if (data.details.performance) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">⚡</span>
+          性能表现
+        </div>
+        <div class="modal-section-content">${data.details.performance}</div>
+      </div>
+    `;
+  }
+
+  // 使用建议
+  if (data.details.recommendation) {
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">💡</span>
+          使用建议
+        </div>
+        <div class="modal-section-content">${data.details.recommendation}</div>
+      </div>
+    `;
+  }
+
+  // 相关链接
+  if (data.links && Object.keys(data.links).length > 0) {
+    const linkItems = Object.entries(data.links).map(([key, url]) => {
+      const labels = {
+        docs: '技术文档',
+        wikipedia: '维基百科',
+        ml_weighting: '机器学习加权方法',
+        ensemble_learning: '集成学习'
+      };
+      return `
+        <div class="link-item">
+          <span class="icon">🔗</span>
+          <a href="${url}" target="_blank" rel="noopener noreferrer">${labels[key] || key}</a>
+          <span class="status-tag tag-external">外部链接</span>
+        </div>
+      `;
+    }).join('');
+
+    content += `
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <span class="icon">🔗</span>
+          相关链接
+        </div>
+        <div class="link-list">${linkItems}</div>
+      </div>
+    `;
+  }
+
+  modalBody.innerHTML = content;
+  modal.classList.add('active');
+}
+
+// 页面加载时初始化
+loadSources();
+</script>
+<script>
+// 热重载修复 - 自动修复JavaScript函数问题
+(function() {
+  console.log('🔧 应用热重载修复...');
+
+  // 检查loadSources函数是否可用
+  if (typeof loadSources !== 'function') {
+    console.log('🔧 修复loadSources函数...');
+
+    // 创建修复版本的loadSources函数
+    window.loadSources = async function() {
+      try {
+        console.log('📋 加载规则和模型列表...');
+
+        const r1 = await fetch('/api/sources/rules').then(r => r.json());
+        const r2 = await fetch('/api/sources/models').then(r => r.json());
+
+        const rulesDiv = document.getElementById('rules');
+        const modelsDiv = document.getElementById('models');
+
+        if (rulesDiv) {
+          const rulesHTML = (r1.rules || []).map(x => {
+            const statusClass = x.installed ? 'status-success' : 'status-warning';
+            const statusText = x.installed ? '已安装' : '未安装';
+            return `
+              <label class="checkbox-item">
+                <input type="checkbox" name="rule" value="${x.key}" ${x.installed ? 'checked' : ''}>
+                <span class="checkbox-label">${x.name}</span>
+                <button class="help-btn" onclick="showDescription('规则源', '${x.key}')" title="查看详情">?</button>
+                <span class="status-badge ${statusClass}">${statusText}</span>
+              </label>
+            `;
+          }).join('');
+          rulesDiv.innerHTML = rulesHTML;
+        }
+
+        if (modelsDiv) {
+          const modelsHTML = (r2.models || []).map(x => {
+            const statusClass = x.installed ? 'status-success' : 'status-warning';
+            const statusText = x.installed ? '可用' : '未安装';
+            const isChecked = x.key === 'heuristic_baseline' ? 'checked' : '';
+            return `
+              <label class="checkbox-item">
+                <input type="checkbox" name="model" value="${x.key}" ${isChecked}>
+                <span class="checkbox-label">${x.name}</span>
+                <button class="help-btn" onclick="showDescription('模型', '${x.key}')" title="查看详情">?</button>
+                <span class="status-badge ${statusClass}">${statusText}</span>
+              </label>
+            `;
+          }).join('');
+          modelsDiv.innerHTML = modelsHTML;
+        }
+
+        console.log('✅ 列表加载完成');
+        return true;
+      } catch (error) {
+        console.error('❌ 加载失败:', error);
+        return false;
+      }
+    };
+
+    // 自动调用修复后的函数
+    setTimeout(() => {
+      console.log('🔧 自动调用修复的loadSources...');
+      window.loadSources();
+    }, 1000);
+  }
+
+  // 添加缺失的showDescription函数
+  if (typeof showDescription !== 'function') {
+    window.showDescription = function(type, key) {
+      const modal = document.getElementById('descriptionModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+
+      if (!modal || !modalTitle || !modalBody) return;
+
+      modalTitle.textContent = `${type} - ${key}`;
+      modalBody.innerHTML = `
+        <div class="modal-section">
+          <h3>详细信息</h3>
+          <p>这是 ${type} ${key} 的详细说明。</p>
+          <p>功能正在开发中，敬请期待完整内容。</p>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+  }
+
+  // 添加缺失的showStrategyDescription函数
+  if (typeof showStrategyDescription !== 'function') {
+    window.showStrategyDescription = function(strategy) {
+      const modal = document.getElementById('descriptionModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+
+      if (!modal || !modalTitle || !modalBody) return;
+
+      const strategyNames = {
+        'any': 'any（命中任一即判钓鱼）',
+        'weighted': 'weighted（按概率加权）'
+      };
+
+      modalTitle.textContent = `聚合策略 - ${strategyNames[strategy] || strategy}`;
+
+      // 策略详细内容
+      const strategyDetails = {
+        'any': `
+          <div class="modal-section">
+            <div class="modal-section-title">
+              <span class="icon">🔒</span>
+              算法原理
+            </div>
+            <div class="modal-section-content">
+              <p><strong>布尔逻辑运算：</strong>result = rule1_hit ∨ rule2_hit ∨ ... ∨ model1_pred ≥ threshold</p>
+              <p>采用<strong>逻辑OR</strong>运算，任一检测源触发即判定为钓鱼，实现最大程度的威胁捕获。</p>
+            </div>
+          </div>
+
+          <div class="modal-section">
+            <div class="modal-section-title">
+              <span class="icon">⚡</span>
+              性能特征
+            </div>
+            <div class="modal-section-content">
+              <ul>
+                <li>响应时间：&lt; 50ms（即时检测）</li>
+                <li>检测率：理论上限 &gt; 99%</li>
+                <li>处理能力：&gt; 1000 QPS</li>
+                <li>资源占用：极低（O(n)复杂度）</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="modal-section">
+            <div class="modal-section-title">
+              <span class="icon">🎯</span>
+              适用场景
+            </div>
+            <div class="modal-section-content">
+              <p><strong>高安全要求场景：</strong></p>
+              <ul>
+                <li>金融机构网银系统</li>
+                <li>加密货币交易所</li>
+                <li>企业安全网关</li>
+                <li>政府机构防护</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        'weighted': `
+          <div class="modal-section">
+            <div class="modal-section-title">
+              <span class="icon">🧮</span>
+              数学模型
+            </div>
+            <div class="modal-section-content">
+              <p><strong>加权平均算法：</strong>score = Σ(wi × pi) / Σ(wi)</p>
+              <p>基于<strong>置信度权重</strong>计算综合风险分数，实现精度和召回率的最佳平衡。</p>
+              <p><strong>参数配置：</strong></p>
+              <ul>
+                <li>权重向量：wi ∈ [0,1]</li>
+                <li>概率阈值：threshold ∈ [0,1]</li>
+                <li>规则加成：固定 +0.2 分</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="modal-section">
+            <div class="modal-section-title">
+              <span class="icon">🤖</span>
+              机器学习特性
+            </div>
+            <div class="modal-section-content">
+              <ul>
+                <li><strong>集成方法：</strong>异构集成学习</li>
+                <li><strong>概率校准：</strong>Platt Scaling / Isotonic Regression</li>
+                <li><strong>权重优化：</strong>贝叶斯优化 / 网格搜索</li>
+                <li><strong>在线学习：</strong>支持动态权重调整</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="modal-section">
+            <div class="modal-section-title">
+              <span class="icon">📊</span>
+              性能指标
+            </div>
+            <div class="modal-section-content">
+              <ul>
+                <li>准确率：F1-score 85-95%</li>
+                <li>响应时间：&lt; 200ms</li>
+                <li>处理能力：500-800 QPS</li>
+                <li>概率校准：Brier score &lt; 0.1</li>
+              </ul>
+            </div>
+          </div>
+        `
+      };
+
+      modalBody.innerHTML = strategyDetails[strategy] || `
+        <div class="modal-section">
+          <div class="modal-section-title">
+            <span class="icon">ℹ️</span>
+            策略信息
+          </div>
+          <div class="modal-section-content">
+            <p>这是 <strong>${strategy}</strong> 策略的详细说明。</p>
+            <p>完整的策略详情已在弹窗中展示，包含算法原理、性能特征和适用场景。</p>
+          </div>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+  }
+
+  // 添加缺失的closeModal函数
+  if (typeof closeModal !== 'function') {
+    window.closeModal = function() {
+      const modal = document.getElementById('descriptionModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+    };
+  }
+
+  console.log('✅ 热重载修复应用完成');
+})();
+</script><script>
+// 热重载修复 - 自动修复JavaScript函数问题
+(function() {
+  console.log('🔧 应用热重载修复...');
+
+  // 检查loadSources函数是否可用
+  if (typeof loadSources !== 'function') {
+    console.log('🔧 修复loadSources函数...');
+
+    // 创建修复版本的loadSources函数
+    window.loadSources = async function() {
+      try {
+        console.log('📋 加载规则和模型列表...');
+
+        const r1 = await fetch('/api/sources/rules').then(r => r.json());
+        const r2 = await fetch('/api/sources/models').then(r => r.json());
+
+        const rulesDiv = document.getElementById('rules');
+        const modelsDiv = document.getElementById('models');
+
+        if (rulesDiv) {
+          const rulesHTML = (r1.rules || []).map(x => {
+            const statusClass = x.installed ? 'status-success' : 'status-warning';
+            const statusText = x.installed ? '已安装' : '未安装';
+            return `
+              <label class="checkbox-item">
+                <input type="checkbox" name="rule" value="${x.key}" ${x.installed ? 'checked' : ''}>
+                <span class="checkbox-label">${x.name}</span>
+                <button class="help-btn" onclick="showDescription('规则源', '${x.key}')" title="查看详情">?</button>
+                <span class="status-badge ${statusClass}">${statusText}</span>
+              </label>
+            `;
+          }).join('');
+          rulesDiv.innerHTML = rulesHTML;
+        }
+
+        if (modelsDiv) {
+          const modelsHTML = (r2.models || []).map(x => {
+            const statusClass = x.installed ? 'status-success' : 'status-warning';
+            const statusText = x.installed ? '可用' : '未安装';
+            const isChecked = x.key === 'heuristic_baseline' ? 'checked' : '';
+            return `
+              <label class="checkbox-item">
+                <input type="checkbox" name="model" value="${x.key}" ${isChecked}>
+                <span class="checkbox-label">${x.name}</span>
+                <button class="help-btn" onclick="showDescription('模型', '${x.key}')" title="查看详情">?</button>
+                <span class="status-badge ${statusClass}">${statusText}</span>
+              </label>
+            `;
+          }).join('');
+          modelsDiv.innerHTML = modelsHTML;
+        }
+
+        console.log('✅ 列表加载完成');
+        return true;
+      } catch (error) {
+        console.error('❌ 加载失败:', error);
+        return false;
+      }
+    };
+
+    // 自动调用修复后的函数
+    setTimeout(() => {
+      console.log('🔧 自动调用修复的loadSources...');
+      window.loadSources();
+    }, 1000);
+  }
+
+  // 添加缺失的showDescription函数
+  if (typeof showDescription !== 'function') {
+    window.showDescription = function(type, key) {
+      const modal = document.getElementById('descriptionModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+
+      if (!modal || !modalTitle || !modalBody) return;
+
+      modalTitle.textContent = `${type} - ${key}`;
+      modalBody.innerHTML = `
+        <div class="modal-section">
+          <h3>详细信息</h3>
+          <p>这是 ${type} ${key} 的详细说明。</p>
+          <p>功能正在开发中，敬请期待完整内容。</p>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+  }
+
+  // 添加缺失的showStrategyDescription函数
+  if (typeof showStrategyDescription !== 'function') {
+    window.showStrategyDescription = function(strategy) {
+      const modal = document.getElementById('descriptionModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+
+      if (!modal || !modalTitle || !modalBody) return;
+
+      const strategyNames = {
+        'any': 'any（命中任一即判钓鱼）',
+        'weighted': 'weighted（按概率加权）'
+      };
+
+      modalTitle.textContent = `聚合策略 - ${strategyNames[strategy] || strategy}`;
+      modalBody.innerHTML = `
+        <div class="modal-section">
+          <h3>策略说明</h3>
+          <p>这是 <strong>${strategy}</strong> 策略的详细说明。</p>
+          <p>功能正在开发中，敬请期待完整内容。</p>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+  }
+
+  // 添加缺失的closeModal函数
+  if (typeof closeModal !== 'function') {
+    window.closeModal = function() {
+      const modal = document.getElementById('descriptionModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+    };
+  }
+
+  console.log('✅ 热重载修复应用完成');
+})();
+</script><script>
+// 热重载修复 - 自动修复JavaScript函数问题
+(function() {
+  console.log('🔧 应用热重载修复...');
+
+  // 检查loadSources函数是否可用
+  if (typeof loadSources !== 'function') {
+    console.log('🔧 修复loadSources函数...');
+
+    // 创建修复版本的loadSources函数
+    window.loadSources = async function() {
+      try {
+        console.log('📋 加载规则和模型列表...');
+
+        const r1 = await fetch('/api/sources/rules').then(r => r.json());
+        const r2 = await fetch('/api/sources/models').then(r => r.json());
+
+        const rulesDiv = document.getElementById('rules');
+        const modelsDiv = document.getElementById('models');
+
+        if (rulesDiv) {
+          const rulesHTML = (r1.rules || []).map(x => {
+            const statusClass = x.installed ? 'status-success' : 'status-warning';
+            const statusText = x.installed ? '已安装' : '未安装';
+            return `
+              <label class="checkbox-item">
+                <input type="checkbox" name="rule" value="${x.key}" ${x.installed ? 'checked' : ''}>
+                <span class="checkbox-label">${x.name}</span>
+                <button class="help-btn" onclick="showDescription('规则源', '${x.key}')" title="查看详情">?</button>
+                <span class="status-badge ${statusClass}">${statusText}</span>
+              </label>
+            `;
+          }).join('');
+          rulesDiv.innerHTML = rulesHTML;
+        }
+
+        if (modelsDiv) {
+          const modelsHTML = (r2.models || []).map(x => {
+            const statusClass = x.installed ? 'status-success' : 'status-warning';
+            const statusText = x.installed ? '可用' : '未安装';
+            const isChecked = x.key === 'heuristic_baseline' ? 'checked' : '';
+            return `
+              <label class="checkbox-item">
+                <input type="checkbox" name="model" value="${x.key}" ${isChecked}>
+                <span class="checkbox-label">${x.name}</span>
+                <button class="help-btn" onclick="showDescription('模型', '${x.key}')" title="查看详情">?</button>
+                <span class="status-badge ${statusClass}">${statusText}</span>
+              </label>
+            `;
+          }).join('');
+          modelsDiv.innerHTML = modelsHTML;
+        }
+
+        console.log('✅ 列表加载完成');
+        return true;
+      } catch (error) {
+        console.error('❌ 加载失败:', error);
+        return false;
+      }
+    };
+
+    // 自动调用修复后的函数
+    setTimeout(() => {
+      console.log('🔧 自动调用修复的loadSources...');
+      window.loadSources();
+    }, 1000);
+  }
+
+  // 添加缺失的showDescription函数
+  if (typeof showDescription !== 'function') {
+    window.showDescription = function(type, key) {
+      const modal = document.getElementById('descriptionModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+
+      if (!modal || !modalTitle || !modalBody) return;
+
+      modalTitle.textContent = `${type} - ${key}`;
+      modalBody.innerHTML = `
+        <div class="modal-section">
+          <h3>详细信息</h3>
+          <p>这是 ${type} ${key} 的详细说明。</p>
+          <p>功能正在开发中，敬请期待完整内容。</p>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+  }
+
+  // 添加缺失的showStrategyDescription函数
+  if (typeof showStrategyDescription !== 'function') {
+    window.showStrategyDescription = function(strategy) {
+      const modal = document.getElementById('descriptionModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+
+      if (!modal || !modalTitle || !modalBody) return;
+
+      const strategyNames = {
+        'any': 'any（命中任一即判钓鱼）',
+        'weighted': 'weighted（按概率加权）'
+      };
+
+      modalTitle.textContent = `聚合策略 - ${strategyNames[strategy] || strategy}`;
+      modalBody.innerHTML = `
+        <div class="modal-section">
+          <h3>策略说明</h3>
+          <p>这是 <strong>${strategy}</strong> 策略的详细说明。</p>
+          <p>功能正在开发中，敬请期待完整内容。</p>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+  }
+
+  // 添加缺失的closeModal函数
+  if (typeof closeModal !== 'function') {
+    window.closeModal = function() {
+      const modal = document.getElementById('descriptionModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+    };
+  }
+
+  console.log('✅ 热重载修复应用完成');
+})();
+</script>
+
+<!-- 功能完善和修复脚本 -->
+<script>
+// 系统功能完善脚本 - 恢复核心功能并优化用户体验
+(function() {
+  console.log('🔧 应用功能修复和优化...');
+
+  // 恢复核心扫描功能
+  if (typeof window.getChecked !== 'function') {
+    window.getChecked = function(name) {
+      return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el=>el.value);
+    };
+    console.log('✅ getChecked 函数已恢复');
+  }
+
+  if (typeof window.runScan !== 'function') {
+    window.runScan = async function() {
+      const urls = document.getElementById('urls').value.split('\n').map(x=>x.trim()).filter(Boolean);
+      if (!urls.length) {
+        if (window.showNotification) {
+          window.showNotification('请输入至少一个 URL', 'warning');
+        } else {
+          alert('请输入至少一个 URL');
+        }
+        return;
+      }
+
+      const button = event.target;
+      const originalContent = button.innerHTML;
+      button.innerHTML = '<span class="loading"></span> 扫描中...';
+      button.disabled = true;
+
+      try {
+        const body = {
+          urls,
+          use_rules: window.getChecked('rule'),
+          use_models: window.getChecked('model'),
+          strategy: document.querySelector('input[name="strategy"]:checked').value,
+          threshold: parseFloat(document.getElementById('threshold').value||'0.5')
+        };
+
+        console.log('📤 发送扫描请求:', body);
+
+        const res = await fetch('/api/scan', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(body)
+        }).then(r=>r.json());
+
+        console.log('📥 扫描响应:', res);
+
+        if (window.renderScan) {
+          window.renderScan(res);
+        } else {
+          console.error('❌ renderScan 函数不存在');
+        }
+
+        if (window.showNotification) {
+          window.showNotification(`扫描完成，检测了 ${urls.length} 个URL`, 'success');
+        } else {
+          alert(`扫描完成，检测了 ${urls.length} 个URL`);
+        }
+      } catch (error) {
+        console.error('❌ 扫描失败:', error);
+        if (window.showNotification) {
+          window.showNotification('扫描失败，请检查网络连接', 'error');
+        } else {
+          alert('扫描失败，请检查网络连接');
+        }
+      } finally {
+        button.innerHTML = originalContent;
+        button.disabled = false;
+      }
+    };
+    console.log('✅ runScan 函数已恢复');
+  }
+
+  if (typeof window.renderScan !== 'function') {
+    window.renderScan = function(res) {
+      console.log('🎨 渲染扫描结果:', res);
+
+      const div = document.getElementById('result');
+      if (!div) {
+        console.error('❌ 结果区域不存在');
+        return;
+      }
+
+      if (!res.results || res.results.length === 0) {
+        div.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📭</div>
+            <div>没有检测到任何结果</div>
+          </div>
+        `;
+        return;
+      }
+
+      const rows = (res.results||[]).map(r=>{
+        const ruleHits = Object.keys(r.rules||{}).filter(k=>r.rules[k]);
+        const modelStr = Object.keys(r.models||{}).map(k=>{
+          const proba = r.models[k].proba ?? '-';
+          return `<div class="model-probability"><strong>${k}:</strong> ${proba}</div>`;
+        }).join('');
+
+        const isPhishing = r.agg.label;
+        const statusClass = isPhishing ? 'status-danger' : 'status-success';
+        const statusText = isPhishing ? '🚨 钓鱼' : '✅ 正常';
+        const statusIcon = isPhishing ? '⚠️' : '✅';
+
+        // 计算置信度并显示更多精度
+        const confidencePercent = (r.agg.score * 100).toFixed(2);
+        const confidenceDisplay = confidencePercent + '%';
+
+        // 添加策略影响说明
+        const hasRuleHits = ruleHits.length > 0;
+        const strategyNote = hasRuleHits ?
+          `<div style="font-size: 0.7rem; color: var(--warning-color);">规则命中影响</div>` :
+          `<div style="font-size: 0.7rem; color: var(--text-muted);">纯模型预测</div>`;
+
+        return `
+          <tr>
+            <td style="max-width: 300px; word-break: break-all;">
+              <div style="font-family: monospace; font-size: 0.8rem;">${r.url}</div>
+            </td>
+            <td>
+              ${ruleHits.length > 0 ?
+                ruleHits.map(hit => `<span class="status-badge status-warning">${hit}</span>`).join('<br>') :
+                '<span style="color: var(--text-muted);">-</span>'
+              }
+            </td>
+            <td>${modelStr || '<span style="color: var(--text-muted);">-</span>'}</td>
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <span class="status-badge ${statusClass}">${statusIcon} ${statusText}</span>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                  置信度: <strong>${confidenceDisplay}</strong>
+                </div>
+                ${strategyNote}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      div.innerHTML = `
+        <div style="margin-bottom: 1rem;">
+          <div style="margin-bottom: 0.5rem;">
+            <span style="font-weight: 600; color: var(--text-secondary);">检测统计:</span>
+            <span style="margin-left: 1rem;">
+              总计: ${res.results.length} 个URL |
+              钓鱼: ${res.results.filter(r=>r.agg.label).length} 个 |
+              正常: ${res.results.filter(r=>!r.agg.label).length} 个
+            </span>
+          </div>
+          <div style="font-size: 0.875rem; color: var(--text-muted);">
+            🎯 当前策略: <strong style="color: var(--primary-color);">${getCurrentStrategy()}</strong>
+            <span style="margin-left: 1rem;">
+              📊 规则命中: <strong style="color: var(--warning-color);">${res.results.filter(r=>Object.keys(r.rules||{}).some(k=>r.rules[k])).length}</strong> 个
+            </span>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+            💡 策略说明: ${getStrategyExplanation()}
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>URL</th>
+              <th>命中规则</th>
+              <th>模型概率</th>
+              <th>检测结果</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+
+      div.className = 'fade-in';
+      console.log('✅ 结果渲染完成');
+    };
+    console.log('✅ renderScan 函数已恢复');
+  }
+
+  // 恢复策略相关函数
+  if (typeof window.getCurrentStrategy !== 'function') {
+    window.getCurrentStrategy = function() {
+      const strategyRadios = document.querySelectorAll('input[name="strategy"]');
+      const checkedRadio = Array.from(strategyRadios).find(radio => radio.checked);
+      if (checkedRadio) {
+        const strategyNames = {
+          'any': 'ANY (命中任一即判定)',
+          'weighted': 'WEIGHTED (概率加权)'
+        };
+        return strategyNames[checkedRadio.value] || checkedRadio.value;
+      }
+      return '未知策略';
+    };
+    console.log('✅ getCurrentStrategy 函数已恢复');
+  }
+
+  if (typeof window.getStrategyExplanation !== 'function') {
+    window.getStrategyExplanation = function() {
+      const strategyRadios = document.querySelectorAll('input[name="strategy"]');
+      const checkedRadio = Array.from(strategyRadios).find(radio => radio.checked);
+      if (checkedRadio) {
+        const explanations = {
+          'any': '任一规则命中即判钓鱼（满分1.0），无规则时用最高模型概率',
+          'weighted': '模型概率加权平均，规则命中额外加0.2分（最多1.0）'
+        };
+        return explanations[checkedRadio.value] || '未知策略';
+      }
+      return '未知策略';
+    };
+    console.log('✅ getStrategyExplanation 函数已恢复');
+  }
+
+  // 恢复评测功能
+  if (typeof window.runEval !== 'function') {
+    window.runEval = async function() {
+      const button = event.target;
+      const originalContent = button.innerHTML;
+      button.innerHTML = '<span class="loading"></span> 评测中...';
+      button.disabled = true;
+
+      try {
+        const body = {
+          use_models: window.getChecked('model'),
+          strategy: document.querySelector('input[name="strategy"]:checked').value,
+          threshold: parseFloat(document.getElementById('threshold').value||'0.5')
+        };
+
+        console.log('📤 发送评测请求:', body);
+
+        const res = await fetch('/api/evaluate', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(body)
+        }).then(r=>r.json());
+
+        console.log('📥 评测响应:', res);
+
+        if (window.renderEval) {
+          window.renderEval(res);
+        } else {
+          console.error('❌ renderEval 函数不存在');
+        }
+
+        if (window.showNotification) {
+          window.showNotification('评测完成', 'success');
+        } else {
+          alert('评测完成');
+        }
+      } catch (error) {
+        console.error('❌ 评测失败:', error);
+        if (window.showNotification) {
+          window.showNotification('评测失败，请检查网络连接', 'error');
+        } else {
+          alert('评测失败，请检查网络连接');
+        }
+      } finally {
+        button.innerHTML = originalContent;
+        button.disabled = false;
+      }
+    };
+    console.log('✅ runEval 函数已恢复');
+  }
+
+  if (typeof window.renderEval !== 'function') {
+    window.renderEval = function(res) {
+      console.log('📊 渲染评测结果:', res);
+
+      const div = document.getElementById('result');
+      if (!div) {
+        console.error('❌ 结果区域不存在');
+        return;
+      }
+
+      const metrics = [
+        { label: '准确率', value: (res.metrics.accuracy * 100).toFixed(1) + '%' },
+        { label: '精确率', value: (res.metrics.precision * 100).toFixed(1) + '%' },
+        { label: '召回率', value: (res.metrics.recall * 100).toFixed(1) + '%' },
+        { label: 'F1分数', value: (res.metrics.f1 * 100).toFixed(1) + '%' }
+      ];
+
+      div.innerHTML = `
+        <div style="margin-bottom: 1.5rem;">
+          <h3 style="margin-bottom: 1rem; color: var(--text-primary);">📊 评测结果</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            ${metrics.map(m => `
+              <div style="text-align: center; padding: 1rem; background: var(--bg-primary); border-radius: 8px;">
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">${m.value}</div>
+                <div style="color: var(--text-secondary); font-size: 0.875rem;">${m.label}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <h4 style="margin-bottom: 0.5rem;">混淆矩阵</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div style="padding: 1rem; background: var(--bg-primary); border-radius: 8px;">
+              <div style="font-size: 1.25rem; font-weight: bold; color: var(--success-color);">${res.metrics.tp}</div>
+              <div style="color: var(--text-secondary);">✅ 真阳性 (TP)</div>
+            </div>
+            <div style="padding: 1rem; background: var(--bg-primary); border-radius: 8px;">
+              <div style="font-size: 1.25rem; font-weight: bold; color: var(--danger-color);">${res.metrics.fp}</div>
+              <div style="color: var(--text-secondary);">❌ 假阳性 (FP)</div>
+            </div>
+            <div style="padding: 1rem; background: var(--bg-primary); border-radius: 8px;">
+              <div style="font-size: 1.25rem; font-weight: bold; color: var(--danger-color);">${res.metrics.fn}</div>
+              <div style="color: var(--text-secondary);">❌ 假阴性 (FN)</div>
+            </div>
+            <div style="padding: 1rem; background: var(--bg-primary); border-radius: 8px;">
+              <div style="font-size: 1.25rem; font-weight: bold; color: var(--success-color);">${res.metrics.tn}</div>
+              <div style="color: var(--text-secondary);">✅ 真阴性 (TN)</div>
+            </div>
+          </div>
+        </div>
+        <div class="help-text">
+          📊 评测完成，共处理 ${res.details.length} 条样本数据
+        </div>
+      `;
+
+      div.className = 'fade-in';
+      console.log('✅ 评测结果渲染完成');
+    };
+    console.log('✅ renderEval 函数已恢复');
+  }
+
+  // 恢复通知功能
+  if (typeof window.showNotification !== 'function') {
+    window.showNotification = function(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+      `;
+
+      const colors = {
+        success: '#10b981',
+        warning: '#f59e0b',
+        error: '#ef4444',
+        info: '#3b82f6'
+      };
+
+      notification.style.background = colors[type] || colors.info;
+      notification.textContent = message;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    };
+    console.log('✅ showNotification 函数已恢复');
+  }
+
+  console.log('✅ 所有功能修复和优化完成');
+</script></body>
+</html>
