@@ -2174,5 +2174,427 @@ loadSources();
 
   console.log('✅ 热重载修复应用完成');
 })();
+</script><script>
+// 热重载修复 - 自动修复JavaScript函数问题
+(function() {
+  console.log('🔧 应用热重载修复...');
+
+  // 检查loadSources函数是否可用
+  if (typeof loadSources !== 'function') {
+    console.log('🔧 修复loadSources函数...');
+
+    // 创建修复版本的loadSources函数
+    window.loadSources = async function() {
+      try {
+        console.log('📋 加载规则和模型列表...');
+
+        const r1 = await fetch('/api/sources/rules').then(r => r.json());
+        const r2 = await fetch('/api/sources/models').then(r => r.json());
+
+        const rulesDiv = document.getElementById('rules');
+        const modelsDiv = document.getElementById('models');
+
+        if (rulesDiv) {
+          const rulesHTML = (r1.rules || []).map(x => {
+            const statusClass = x.installed ? 'status-success' : 'status-warning';
+            const statusText = x.installed ? '已安装' : '未安装';
+            return `
+              <label class="checkbox-item">
+                <input type="checkbox" name="rule" value="${x.key}" ${x.installed ? 'checked' : ''}>
+                <span class="checkbox-label">${x.name}</span>
+                <button class="help-btn" onclick="showDescription('规则源', '${x.key}')" title="查看详情">?</button>
+                <span class="status-badge ${statusClass}">${statusText}</span>
+              </label>
+            `;
+          }).join('');
+          rulesDiv.innerHTML = rulesHTML;
+        }
+
+        if (modelsDiv) {
+          const modelsHTML = (r2.models || []).map(x => {
+            const statusClass = x.installed ? 'status-success' : 'status-warning';
+            const statusText = x.installed ? '可用' : '未安装';
+            const isChecked = x.key === 'heuristic_baseline' ? 'checked' : '';
+            return `
+              <label class="checkbox-item">
+                <input type="checkbox" name="model" value="${x.key}" ${isChecked}>
+                <span class="checkbox-label">${x.name}</span>
+                <button class="help-btn" onclick="showDescription('模型', '${x.key}')" title="查看详情">?</button>
+                <span class="status-badge ${statusClass}">${statusText}</span>
+              </label>
+            `;
+          }).join('');
+          modelsDiv.innerHTML = modelsHTML;
+        }
+
+        console.log('✅ 列表加载完成');
+        return true;
+      } catch (error) {
+        console.error('❌ 加载失败:', error);
+        return false;
+      }
+    };
+
+    // 自动调用修复后的函数
+    setTimeout(() => {
+      console.log('🔧 自动调用修复的loadSources...');
+      window.loadSources();
+    }, 1000);
+  }
+
+  // 添加缺失的showDescription函数
+  if (typeof showDescription !== 'function') {
+    window.showDescription = function(type, key) {
+      const modal = document.getElementById('descriptionModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+
+      if (!modal || !modalTitle || !modalBody) return;
+
+      modalTitle.textContent = `${type} - ${key}`;
+      modalBody.innerHTML = `
+        <div class="modal-section">
+          <h3>详细信息</h3>
+          <p>这是 ${type} ${key} 的详细说明。</p>
+          <p>功能正在开发中，敬请期待完整内容。</p>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+  }
+
+  // 添加缺失的showStrategyDescription函数
+  if (typeof showStrategyDescription !== 'function') {
+    window.showStrategyDescription = function(strategy) {
+      const modal = document.getElementById('descriptionModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+
+      if (!modal || !modalTitle || !modalBody) return;
+
+      const strategyNames = {
+        'any': 'any（命中任一即判钓鱼）',
+        'weighted': 'weighted（按概率加权）'
+      };
+
+      modalTitle.textContent = `聚合策略 - ${strategyNames[strategy] || strategy}`;
+      modalBody.innerHTML = `
+        <div class="modal-section">
+          <h3>策略说明</h3>
+          <p>这是 <strong>${strategy}</strong> 策略的详细说明。</p>
+          <p>功能正在开发中，敬请期待完整内容。</p>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+  }
+
+  // 添加缺失的closeModal函数
+  if (typeof closeModal !== 'function') {
+    window.closeModal = function() {
+      const modal = document.getElementById('descriptionModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+    };
+  }
+
+  console.log('✅ 热重载修复应用完成');
+})();
+</script><script>
+// 热重载修复 - 自动修复JavaScript函数问题
+(function() {
+  console.log('🔧 应用热重载修复...');
+
+  // 检查loadSources函数是否可用
+  if (typeof loadSources !== 'function') {
+    console.log('🔧 修复loadSources函数...');
+
+    // 创建修复版本的loadSources函数
+    window.loadSources = async function() {
+      try {
+        console.log('📋 加载规则和模型列表...');
+
+        const r1 = await fetch('/api/sources/rules').then(r => r.json());
+        const r2 = await fetch('/api/sources/models').then(r => r.json());
+
+        const rulesDiv = document.getElementById('rules');
+        const modelsDiv = document.getElementById('models');
+
+        if (rulesDiv) {
+          const rulesHTML = (r1.rules || []).map(x => {
+            const statusClass = x.installed ? 'status-success' : 'status-warning';
+            const statusText = x.installed ? '已安装' : '未安装';
+            return `
+              <label class="checkbox-item">
+                <input type="checkbox" name="rule" value="${x.key}" ${x.installed ? 'checked' : ''}>
+                <span class="checkbox-label">${x.name}</span>
+                <button class="help-btn" onclick="showDescription('规则源', '${x.key}')" title="查看详情">?</button>
+                <span class="status-badge ${statusClass}">${statusText}</span>
+              </label>
+            `;
+          }).join('');
+          rulesDiv.innerHTML = rulesHTML;
+        }
+
+        if (modelsDiv) {
+          const modelsHTML = (r2.models || []).map(x => {
+            const statusClass = x.installed ? 'status-success' : 'status-warning';
+            const statusText = x.installed ? '可用' : '未安装';
+            const isChecked = x.key === 'heuristic_baseline' ? 'checked' : '';
+            return `
+              <label class="checkbox-item">
+                <input type="checkbox" name="model" value="${x.key}" ${isChecked}>
+                <span class="checkbox-label">${x.name}</span>
+                <button class="help-btn" onclick="showDescription('模型', '${x.key}')" title="查看详情">?</button>
+                <span class="status-badge ${statusClass}">${statusText}</span>
+              </label>
+            `;
+          }).join('');
+          modelsDiv.innerHTML = modelsHTML;
+        }
+
+        console.log('✅ 列表加载完成');
+        return true;
+      } catch (error) {
+        console.error('❌ 加载失败:', error);
+        return false;
+      }
+    };
+
+    // 自动调用修复后的函数
+    setTimeout(() => {
+      console.log('🔧 自动调用修复的loadSources...');
+      window.loadSources();
+    }, 1000);
+  }
+
+  // 添加缺失的showDescription函数
+  if (typeof showDescription !== 'function') {
+    window.showDescription = function(type, key) {
+      const modal = document.getElementById('descriptionModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+
+      if (!modal || !modalTitle || !modalBody) return;
+
+      modalTitle.textContent = `${type} - ${key}`;
+      modalBody.innerHTML = `
+        <div class="modal-section">
+          <h3>详细信息</h3>
+          <p>这是 ${type} ${key} 的详细说明。</p>
+          <p>功能正在开发中，敬请期待完整内容。</p>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+  }
+
+  // 添加缺失的showStrategyDescription函数
+  if (typeof showStrategyDescription !== 'function') {
+    window.showStrategyDescription = function(strategy) {
+      const modal = document.getElementById('descriptionModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+
+      if (!modal || !modalTitle || !modalBody) return;
+
+      const strategyNames = {
+        'any': 'any（命中任一即判钓鱼）',
+        'weighted': 'weighted（按概率加权）'
+      };
+
+      modalTitle.textContent = `聚合策略 - ${strategyNames[strategy] || strategy}`;
+      modalBody.innerHTML = `
+        <div class="modal-section">
+          <h3>策略说明</h3>
+          <p>这是 <strong>${strategy}</strong> 策略的详细说明。</p>
+          <p>功能正在开发中，敬请期待完整内容。</p>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+  }
+
+  // 添加缺失的closeModal函数
+  if (typeof closeModal !== 'function') {
+    window.closeModal = function() {
+      const modal = document.getElementById('descriptionModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+    };
+  }
+
+  console.log('✅ 热重载修复应用完成');
+})();
+</script>
+
+<!-- 扫描功能修复脚本 -->
+<script>
+// 扫描功能修复脚本 - 确保关键函数在全局作用域可用
+(function() {
+  console.log('🔧 修复扫描功能...');
+
+  // 确保关键函数在全局作用域中可用
+  if (typeof window.getChecked !== 'function') {
+    window.getChecked = function(name) {
+      return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el=>el.value);
+    };
+    console.log('✅ getChecked 函数已修复');
+  }
+
+  if (typeof window.runScan !== 'function') {
+    window.runScan = async function() {
+      const urls = document.getElementById('urls').value.split('\n').map(x=>x.trim()).filter(Boolean);
+      if (!urls.length) {
+        if (window.showNotification) {
+          window.showNotification('请输入至少一个 URL', 'warning');
+        } else {
+          alert('请输入至少一个 URL');
+        }
+        return;
+      }
+
+      const button = event.target;
+      const originalContent = button.innerHTML;
+      button.innerHTML = '<span class="loading"></span> 扫描中...';
+      button.disabled = true;
+
+      try {
+        const body = {
+          urls,
+          use_rules: window.getChecked('rule'),
+          use_models: window.getChecked('model'),
+          strategy: document.querySelector('input[name="strategy"]:checked').value,
+          threshold: parseFloat(document.getElementById('threshold').value||'0.5')
+        };
+
+        console.log('📤 发送扫描请求:', body);
+
+        const res = await fetch('/api/scan', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(body)
+        }).then(r=>r.json());
+
+        console.log('📥 扫描响应:', res);
+
+        if (window.renderScan) {
+          window.renderScan(res);
+        } else {
+          console.error('❌ renderScan 函数不存在');
+        }
+
+        if (window.showNotification) {
+          window.showNotification(`扫描完成，检测了 ${urls.length} 个URL`, 'success');
+        } else {
+          alert(`扫描完成，检测了 ${urls.length} 个URL`);
+        }
+      } catch (error) {
+        console.error('❌ 扫描失败:', error);
+        if (window.showNotification) {
+          window.showNotification('扫描失败，请检查网络连接', 'error');
+        } else {
+          alert('扫描失败，请检查网络连接');
+        }
+      } finally {
+        button.innerHTML = originalContent;
+        button.disabled = false;
+      }
+    };
+    console.log('✅ runScan 函数已修复');
+  }
+
+  if (typeof window.renderScan !== 'function') {
+    window.renderScan = function(res) {
+      console.log('🎨 渲染扫描结果:', res);
+
+      const div = document.getElementById('result');
+      if (!div) {
+        console.error('❌ 结果区域不存在');
+        return;
+      }
+
+      if (!res.results || res.results.length === 0) {
+        div.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📭</div>
+            <div>没有检测到任何结果</div>
+          </div>
+        `;
+        return;
+      }
+
+      const rows = (res.results||[]).map(r=>{
+        const ruleHits = Object.keys(r.rules||{}).filter(k=>r.rules[k]);
+        const modelStr = Object.keys(r.models||{}).map(k=>{
+          const proba = r.models[k].proba ?? '-';
+          return `<div class="model-probability"><strong>${k}:</strong> ${proba}</div>`;
+        }).join('');
+
+        const isPhishing = r.agg.label;
+        const statusClass = isPhishing ? 'status-danger' : 'status-success';
+        const statusText = isPhishing ? '🚨 钓鱼' : '✅ 正常';
+        const statusIcon = isPhishing ? '⚠️' : '✅';
+
+        return `
+          <tr>
+            <td style="max-width: 300px; word-break: break-all;">
+              <div style="font-family: monospace; font-size: 0.8rem;">${r.url}</div>
+            </td>
+            <td>
+              ${ruleHits.length > 0 ?
+                ruleHits.map(hit => `<span class="status-badge status-warning">${hit}</span>`).join('<br>') :
+                '<span style="color: var(--text-muted);">-</span>'
+              }
+            </td>
+            <td>${modelStr || '<span style="color: var(--text-muted);">-</span>'}</td>
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <span class="status-badge ${statusClass}">${statusIcon} ${statusText}</span>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                  置信度: <strong>${(r.agg.score * 100).toFixed(1)}%</strong>
+                </div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      div.innerHTML = `
+        <div style="margin-bottom: 1rem;">
+          <span style="font-weight: 600; color: var(--text-secondary);">检测统计:</span>
+          <span style="margin-left: 1rem;">
+            总计: ${res.results.length} 个URL |
+            钓鱼: ${res.results.filter(r=>r.agg.label).length} 个 |
+            正常: ${res.results.filter(r=>!r.agg.label).length} 个
+          </span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>URL</th>
+              <th>命中规则</th>
+              <th>模型概率</th>
+              <th>检测结果</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+
+      div.className = 'fade-in';
+      console.log('✅ 结果渲染完成');
+    };
+    console.log('✅ renderScan 函数已修复');
+  }
+
+  console.log('✅ 所有扫描功能已修复');
+})();
 </script></body>
 </html>
