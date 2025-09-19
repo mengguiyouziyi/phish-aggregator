@@ -3,75 +3,539 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>phish-aggregator</title>
+  <title>Phish Aggregator - 钓鱼网站检测聚合平台</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; margin: 0; padding: 0; }
-    header { background: #111; color: #fff; padding: 12px 16px; }
-    main { padding: 16px; display: grid; grid-template-columns: 300px 1fr; gap: 16px; }
-    section { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 12px; }
-    h2 { font-size: 16px; margin: 4px 0 8px; }
-    textarea { width: 100%; height: 140px; }
-    .btn { padding: 8px 12px; border: 1px solid #111; background: #111; color: #fff; border-radius: 6px; cursor: pointer; }
-    table { border-collapse: collapse; width: 100%; font-size: 14px; }
-    th, td { border: 1px solid #eee; padding: 8px; text-align: left; vertical-align: top; }
-    .grid { display: grid; gap: 8px; }
-    .small { font-size: 12px; color: #555; }
-    .pill { display: inline-block; padding: 2px 6px; border: 1px solid #ddd; border-radius: 999px; margin-right: 4px; font-size: 12px; }
-    .ok { color: #0a0; } .warn { color: #a60; } .bad { color: #c00; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --border-color: #e2e8f0;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-color), #1e40af);
+      color: white;
+      padding: 1.5rem 2rem;
+      box-shadow: var(--shadow-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    header .subtitle {
+      font-size: 0.875rem;
+      opacity: 0.9;
+      margin-top: 0.25rem;
+    }
+
+    .logo {
+      width: 32px;
+      height: 32px;
+      background: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+
+    main {
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1024px) {
+      main {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+
+    section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.2s;
+    }
+
+    section:hover {
+      box-shadow: var(--shadow-lg);
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+      cursor: pointer;
+    }
+
+    .checkbox-item:hover {
+      background-color: var(--bg-primary);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .checkbox-label {
+      flex: 1;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .radio-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+      cursor: pointer;
+    }
+
+    .radio-item:hover {
+      background-color: var(--bg-primary);
+    }
+
+    .radio-item input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .radio-label {
+      flex: 1;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .threshold-control {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .threshold-slider {
+      flex: 1;
+      height: 6px;
+      background: var(--border-color);
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .threshold-slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--primary-color);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .threshold-value {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      min-width: 45px;
+      text-align: center;
+    }
+
+    textarea {
+      width: 100%;
+      height: 180px;
+      padding: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 2px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-color);
+    }
+
+    .help-text {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border-color);
+      margin: 1.5rem 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+    }
+
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background: var(--bg-primary);
+      font-weight: 600;
+      color: var(--text-secondary);
+      position: sticky;
+      top: 0;
+    }
+
+    tr:hover {
+      background: var(--bg-primary);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-success {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success-color);
+    }
+
+    .status-warning {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning-color);
+    }
+
+    .status-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger-color);
+    }
+
+    .model-probability {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .metric-card {
+      background: var(--bg-primary);
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
-<header><strong>phish-aggregator</strong> — 聚合规则 × 模型，对比评测</header>
+<header>
+  <div style="display: flex; align-items: center; gap: 0.75rem;">
+    <div class="logo">🛡️</div>
+    <div>
+      <h1>Phish Aggregator</h1>
+      <div class="subtitle">钓鱼网站检测聚合平台 - 整合多个规则清单和模型</div>
+    </div>
+  </div>
+</header>
 <main>
   <section>
-    <h2>选择源</h2>
-    <div class="grid">
-      <div>
-        <div class="small">规则/清单</div>
-        <div id="rules"></div>
-      </div>
-      <div>
-        <div class="small">模型</div>
-        <div id="models"></div>
-      </div>
-      <div>
-        <div class="small">策略</div>
-        <label><input type="radio" name="strategy" value="any" checked> any（命中任一即判钓鱼）</label><br/>
-        <label><input type="radio" name="strategy" value="weighted"> weighted（按概率加权）</label><br/>
-        <div class="small">阈值（模型概率≥阈值视为钓鱼）</div>
-        <input id="threshold" type="number" step="0.05" min="0" max="1" value="0.5"/>
+    <h2>
+      <span class="icon">⚙️</span>
+      检测配置
+    </h2>
+
+    <div class="form-group">
+      <div class="form-label">规则/清单</div>
+      <div class="checkbox-group" id="rules"></div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">检测模型</div>
+      <div class="checkbox-group" id="models"></div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">聚合策略</div>
+      <div class="radio-group">
+        <label class="radio-item">
+          <input type="radio" name="strategy" value="any" checked>
+          <span class="radio-label">any（命中任一即判钓鱼）</span>
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="strategy" value="weighted">
+          <span class="radio-label">weighted（按概率加权）</span>
+        </label>
       </div>
     </div>
-    <hr/>
-    <h2>输入 URL</h2>
-    <textarea id="urls" placeholder="每行一个 URL"></textarea>
-    <div style="margin-top:8px;display:flex;gap:8px;">
-      <button class="btn" onclick="runScan()">开始扫描</button>
-      <button class="btn" onclick="runEval()">对内置 sample 评测</button>
+
+    <div class="form-group">
+      <div class="form-label">检测阈值</div>
+      <div class="threshold-control">
+        <input type="range" id="threshold" class="threshold-slider" min="0" max="1" step="0.05" value="0.5">
+        <span class="threshold-value" id="threshold-value">0.50</span>
+      </div>
+      <div class="help-text">模型概率≥阈值视为钓鱼</div>
     </div>
-    <p class="small">建议先运行 scripts/fetch_rules.py 拉取规则清单。</p>
+
+    <div class="divider"></div>
+
+    <h2>
+      <span class="icon">🔗</span>
+      输入 URL
+    </h2>
+
+    <textarea id="urls" placeholder="每行输入一个 URL，例如：&#10;https://example.com&#10;https://phishing-site.com"></textarea>
+
+    <div class="button-group">
+      <button class="btn btn-primary" onclick="runScan()">
+        <span>🔍</span>
+        开始扫描
+      </button>
+      <button class="btn btn-secondary" onclick="runEval()">
+        <span>📊</span>
+        评测性能
+      </button>
+    </div>
+
+    <div class="help-text">
+      💡 建议先运行 <code>python scripts/fetch_rules.py</code> 拉取最新规则清单
+    </div>
   </section>
 
   <section>
-    <h2>结果</h2>
-    <div id="result"></div>
+    <h2>
+      <span class="icon">📋</span>
+      检测结果
+    </h2>
+    <div id="result" class="fade-in">
+      <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+        <div>配置检测源并输入 URL 开始扫描</div>
+      </div>
+    </div>
   </section>
 </main>
 
 <script>
+// 阈值滑块实时更新
+document.getElementById('threshold').addEventListener('input', function() {
+  document.getElementById('threshold-value').textContent = parseFloat(this.value).toFixed(2);
+});
+
 async function loadSources() {
-  const r1 = await fetch('/api/sources/rules').then(r=>r.json());
-  const r2 = await fetch('/api/sources/models').then(r=>r.json());
-  const rulesDiv = document.getElementById('rules');
-  const modelsDiv = document.getElementById('models');
-  rulesDiv.innerHTML = (r1.rules||[]).map(x=>{
-    return `<label><input type="checkbox" name="rule" value="${x.key}" ${x.installed?'checked':''}/> ${x.name} ${x.installed?'<span class="pill">已安装</span>':'<span class="pill">未安装</span>'}</label>`;
-  }).join('<br/>');
-  modelsDiv.innerHTML = (r2.models||[]).map(x=>{
-    return `<label><input type="checkbox" name="model" value="${x.key}" ${x.key==='heuristic_baseline'?'checked':''}/> ${x.name} ${x.installed?'<span class="pill">可用</span>':'<span class="pill">未安装</span>'}</label>`;
-  }).join('<br/>');
+  try {
+    const r1 = await fetch('/api/sources/rules').then(r=>r.json());
+    const r2 = await fetch('/api/sources/models').then(r=>r.json());
+
+    const rulesDiv = document.getElementById('rules');
+    const modelsDiv = document.getElementById('models');
+
+    rulesDiv.innerHTML = (r1.rules||[]).map(x=>{
+      const statusClass = x.installed ? 'status-success' : 'status-warning';
+      const statusText = x.installed ? '已安装' : '未安装';
+      return `
+        <label class="checkbox-item">
+          <input type="checkbox" name="rule" value="${x.key}" ${x.installed?'checked':''}>
+          <span class="checkbox-label">${x.name}</span>
+          <span class="status-badge ${statusClass}">${statusText}</span>
+        </label>
+      `;
+    }).join('');
+
+    modelsDiv.innerHTML = (r2.models||[]).map(x=>{
+      const statusClass = x.installed ? 'status-success' : 'status-warning';
+      const statusText = x.installed ? '可用' : '未安装';
+      const isChecked = x.key === 'heuristic_baseline' ? 'checked' : '';
+      return `
+        <label class="checkbox-item">
+          <input type="checkbox" name="model" value="${x.key}" ${isChecked}>
+          <span class="checkbox-label">${x.name}</span>
+          <span class="status-badge ${statusClass}">${statusText}</span>
+        </label>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('加载源失败:', error);
+  }
 }
-loadSources();
 
 function getChecked(name) {
   return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el=>el.value);
@@ -80,47 +544,233 @@ function getChecked(name) {
 async function runScan() {
   const urls = document.getElementById('urls').value.split('\n').map(x=>x.trim()).filter(Boolean);
   if (!urls.length) {
-    alert('请输入至少一个 URL');
+    showNotification('请输入至少一个 URL', 'warning');
     return;
   }
-  const body = {
-    urls,
-    use_rules: getChecked('rule'),
-    use_models: getChecked('model'),
-    strategy: document.querySelector('input[name="strategy"]:checked').value,
-    threshold: parseFloat(document.getElementById('threshold').value||'0.5')
-  };
-  const res = await fetch('/api/scan', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}).then(r=>r.json());
-  renderScan(res);
+
+  const button = event.target;
+  const originalContent = button.innerHTML;
+  button.innerHTML = '<span class="loading"></span> 扫描中...';
+  button.disabled = true;
+
+  try {
+    const body = {
+      urls,
+      use_rules: getChecked('rule'),
+      use_models: getChecked('model'),
+      strategy: document.querySelector('input[name="strategy"]:checked').value,
+      threshold: parseFloat(document.getElementById('threshold').value||'0.5')
+    };
+
+    const res = await fetch('/api/scan', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    }).then(r=>r.json());
+
+    renderScan(res);
+    showNotification(`扫描完成，检测了 ${urls.length} 个URL`, 'success');
+  } catch (error) {
+    showNotification('扫描失败，请检查网络连接', 'error');
+    console.error('扫描失败:', error);
+  } finally {
+    button.innerHTML = originalContent;
+    button.disabled = false;
+  }
 }
 
 function renderScan(res) {
   const div = document.getElementById('result');
+
+  if (!res.results || res.results.length === 0) {
+    div.innerHTML = `
+      <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+        <div style="font-size: 2rem; margin-bottom: 1rem;">📭</div>
+        <div>没有检测到任何结果</div>
+      </div>
+    `;
+    return;
+  }
+
   const rows = (res.results||[]).map(r=>{
     const ruleHits = Object.keys(r.rules||{}).filter(k=>r.rules[k]);
-    const modelStr = Object.keys(r.models||{}).map(k=>`${k}: ${(r.models[k].proba??'-')}`).join('<br/>');
-    const label = r.agg.label ? '<span class="bad">钓鱼</span>' : '<span class="ok">正常</span>';
-    return `<tr><td>${r.url}</td><td>${ruleHits.join('<br/>')||'-'}</td><td>${modelStr||'-'}</td><td>${label}<br/>score=${r.agg.score.toFixed(3)}</td></tr>`;
+    const modelStr = Object.keys(r.models||{}).map(k=>{
+      const proba = r.models[k].proba ?? '-';
+      return `<div class="model-probability"><strong>${k}:</strong> ${proba}</div>`;
+    }).join('');
+
+    const isPhishing = r.agg.label;
+    const statusClass = isPhishing ? 'status-danger' : 'status-success';
+    const statusText = isPhishing ? '🚨 钓鱼' : '✅ 正常';
+    const statusIcon = isPhishing ? '⚠️' : '✅';
+
+    return `
+      <tr>
+        <td style="max-width: 300px; word-break: break-all;">
+          <div style="font-family: monospace; font-size: 0.8rem;">${r.url}</div>
+        </td>
+        <td>
+          ${ruleHits.length > 0 ?
+            ruleHits.map(hit => `<span class="status-badge status-warning">${hit}</span>`).join('<br>') :
+            '<span style="color: var(--text-muted);">-</span>'
+          }
+        </td>
+        <td>${modelStr || '<span style="color: var(--text-muted);">-</span>'}</td>
+        <td>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <span class="status-badge ${statusClass}">${statusIcon} ${statusText}</span>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">
+              置信度: <strong>${(r.agg.score * 100).toFixed(1)}%</strong>
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
   }).join('');
-  div.innerHTML = `<table><thead><tr><th>URL</th><th>命中规则</th><th>模型概率</th><th>聚合结论</th></tr></thead><tbody>${rows}</tbody></table>`;
+
+  div.innerHTML = `
+    <div style="margin-bottom: 1rem;">
+      <span style="font-weight: 600; color: var(--text-secondary);">检测统计:</span>
+      <span style="margin-left: 1rem;">
+        总计: ${res.results.length} 个URL |
+        钓鱼: ${res.results.filter(r=>r.agg.label).length} 个 |
+        正常: ${res.results.filter(r=>!r.agg.label).length} 个
+      </span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>URL</th>
+          <th>命中规则</th>
+          <th>模型概率</th>
+          <th>检测结果</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+
+  div.className = 'fade-in';
 }
 
 async function runEval() {
-  const body = {
-    use_models: getChecked('model'),
-    strategy: document.querySelector('input[name="strategy"]:checked').value,
-    threshold: parseFloat(document.getElementById('threshold').value||'0.5')
-  };
-  const res = await fetch('/api/evaluate', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}).then(r=>r.json());
-  document.getElementById('result').innerHTML = `
-    <div><strong>metrics</strong> — acc=${(res.metrics.accuracy*100).toFixed(1)}%, 
-      prec=${(res.metrics.precision*100).toFixed(1)}%, rec=${(res.metrics.recall*100).toFixed(1)}%, 
-      f1=${(res.metrics.f1*100).toFixed(1)}%
-      <span class="small"> (TP=${res.metrics.tp}, TN=${res.metrics.tn}, FP=${res.metrics.fp}, FN=${res.metrics.fn})</span>
-    </div>
-    <div class="small" style="margin-top:8px;">详单条目：${res.details.length} 条</div>
-  `;
+  const button = event.target;
+  const originalContent = button.innerHTML;
+  button.innerHTML = '<span class="loading"></span> 评测中...';
+  button.disabled = true;
+
+  try {
+    const body = {
+      use_models: getChecked('model'),
+      strategy: document.querySelector('input[name="strategy"]:checked').value,
+      threshold: parseFloat(document.getElementById('threshold').value||'0.5')
+    };
+
+    const res = await fetch('/api/evaluate', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    }).then(r=>r.json());
+
+    renderEval(res);
+    showNotification('评测完成', 'success');
+  } catch (error) {
+    showNotification('评测失败，请检查网络连接', 'error');
+    console.error('评测失败:', error);
+  } finally {
+    button.innerHTML = originalContent;
+    button.disabled = false;
+  }
 }
+
+function renderEval(res) {
+  const div = document.getElementById('result');
+
+  const metrics = [
+    { label: '准确率', value: (res.metrics.accuracy * 100).toFixed(1) + '%' },
+    { label: '精确率', value: (res.metrics.precision * 100).toFixed(1) + '%' },
+    { label: '召回率', value: (res.metrics.recall * 100).toFixed(1) + '%' },
+    { label: 'F1分数', value: (res.metrics.f1 * 100).toFixed(1) + '%' }
+  ];
+
+  const metricsGrid = metrics.map(metric => `
+    <div class="metric-card">
+      <div class="metric-value">${metric.value}</div>
+      <div class="metric-label">${metric.label}</div>
+    </div>
+  `).join('');
+
+  div.innerHTML = `
+    <div class="metrics-grid">
+      ${metricsGrid}
+    </div>
+
+    <div style="background: var(--bg-primary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+      <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary);">混淆矩阵</div>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; font-size: 0.875rem;">
+        <div>✅ 真阳性 (TP): <strong>${res.metrics.tp}</strong></div>
+        <div>✅ 真阴性 (TN): <strong>${res.metrics.tn}</strong></div>
+        <div>❌ 假阳性 (FP): <strong>${res.metrics.fp}</strong></div>
+        <div>❌ 假阴性 (FN): <strong>${res.metrics.fn}</strong></div>
+      </div>
+    </div>
+
+    <div class="help-text">
+      📊 评测完成，共处理 ${res.details.length} 条样本数据
+    </div>
+  `;
+
+  div.className = 'fade-in';
+}
+
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+  `;
+
+  const colors = {
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    info: '#3b82f6'
+  };
+
+  notification.style.background = colors[type] || colors.info;
+  notification.textContent = message;
+
+  document.body.appendChild(notification);
+
+  setTimeout(() => {
+    notification.style.animation = 'slideOut 0.3s ease-in';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// 添加动画样式
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+`;
+document.head.appendChild(style);
+
+// 页面加载时初始化
+loadSources();
 </script>
 </body>
 </html>
