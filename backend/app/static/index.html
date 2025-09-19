@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>phish-aggregator</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; margin: 0; padding: 0; }
+    header { background: #111; color: #fff; padding: 12px 16px; }
+    main { padding: 16px; display: grid; grid-template-columns: 300px 1fr; gap: 16px; }
+    section { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 12px; }
+    h2 { font-size: 16px; margin: 4px 0 8px; }
+    textarea { width: 100%; height: 140px; }
+    .btn { padding: 8px 12px; border: 1px solid #111; background: #111; color: #fff; border-radius: 6px; cursor: pointer; }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; }
+    th, td { border: 1px solid #eee; padding: 8px; text-align: left; vertical-align: top; }
+    .grid { display: grid; gap: 8px; }
+    .small { font-size: 12px; color: #555; }
+    .pill { display: inline-block; padding: 2px 6px; border: 1px solid #ddd; border-radius: 999px; margin-right: 4px; font-size: 12px; }
+    .ok { color: #0a0; } .warn { color: #a60; } .bad { color: #c00; }
+  </style>
+</head>
+<body>
+<header><strong>phish-aggregator</strong> — 聚合规则 × 模型，对比评测</header>
+<main>
+  <section>
+    <h2>选择源</h2>
+    <div class="grid">
+      <div>
+        <div class="small">规则/清单</div>
+        <div id="rules"></div>
+      </div>
+      <div>
+        <div class="small">模型</div>
+        <div id="models"></div>
+      </div>
+      <div>
+        <div class="small">策略</div>
+        <label><input type="radio" name="strategy" value="any" checked> any（命中任一即判钓鱼）</label><br/>
+        <label><input type="radio" name="strategy" value="weighted"> weighted（按概率加权）</label><br/>
+        <div class="small">阈值（模型概率≥阈值视为钓鱼）</div>
+        <input id="threshold" type="number" step="0.05" min="0" max="1" value="0.5"/>
+      </div>
+    </div>
+    <hr/>
+    <h2>输入 URL</h2>
+    <textarea id="urls" placeholder="每行一个 URL"></textarea>
+    <div style="margin-top:8px;display:flex;gap:8px;">
+      <button class="btn" onclick="runScan()">开始扫描</button>
+      <button class="btn" onclick="runEval()">对内置 sample 评测</button>
+    </div>
+    <p class="small">建议先运行 scripts/fetch_rules.py 拉取规则清单。</p>
+  </section>
+
+  <section>
+    <h2>结果</h2>
+    <div id="result"></div>
+  </section>
+</main>
+
+<script>
+async function loadSources() {
+  const r1 = await fetch('/api/sources/rules').then(r=>r.json());
+  const r2 = await fetch('/api/sources/models').then(r=>r.json());
+  const rulesDiv = document.getElementById('rules');
+  const modelsDiv = document.getElementById('models');
+  rulesDiv.innerHTML = (r1.rules||[]).map(x=>{
+    return `<label><input type="checkbox" name="rule" value="${x.key}" ${x.installed?'checked':''}/> ${x.name} ${x.installed?'<span class="pill">已安装</span>':'<span class="pill">未安装</span>'}</label>`;
+  }).join('<br/>');
+  modelsDiv.innerHTML = (r2.models||[]).map(x=>{
+    return `<label><input type="checkbox" name="model" value="${x.key}" ${x.key==='heuristic_baseline'?'checked':''}/> ${x.name} ${x.installed?'<span class="pill">可用</span>':'<span class="pill">未安装</span>'}</label>`;
+  }).join('<br/>');
+}
+loadSources();
+
+function getChecked(name) {
+  return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el=>el.value);
+}
+
+async function runScan() {
+  const urls = document.getElementById('urls').value.split('\n').map(x=>x.trim()).filter(Boolean);
+  if (!urls.length) {
+    alert('请输入至少一个 URL');
+    return;
+  }
+  const body = {
+    urls,
+    use_rules: getChecked('rule'),
+    use_models: getChecked('model'),
+    strategy: document.querySelector('input[name="strategy"]:checked').value,
+    threshold: parseFloat(document.getElementById('threshold').value||'0.5')
+  };
+  const res = await fetch('/api/scan', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}).then(r=>r.json());
+  renderScan(res);
+}
+
+function renderScan(res) {
+  const div = document.getElementById('result');
+  const rows = (res.results||[]).map(r=>{
+    const ruleHits = Object.keys(r.rules||{}).filter(k=>r.rules[k]);
+    const modelStr = Object.keys(r.models||{}).map(k=>`${k}: ${(r.models[k].proba??'-')}`).join('<br/>');
+    const label = r.agg.label ? '<span class="bad">钓鱼</span>' : '<span class="ok">正常</span>';
+    return `<tr><td>${r.url}</td><td>${ruleHits.join('<br/>')||'-'}</td><td>${modelStr||'-'}</td><td>${label}<br/>score=${r.agg.score.toFixed(3)}</td></tr>`;
+  }).join('');
+  div.innerHTML = `<table><thead><tr><th>URL</th><th>命中规则</th><th>模型概率</th><th>聚合结论</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+async function runEval() {
+  const body = {
+    use_models: getChecked('model'),
+    strategy: document.querySelector('input[name="strategy"]:checked').value,
+    threshold: parseFloat(document.getElementById('threshold').value||'0.5')
+  };
+  const res = await fetch('/api/evaluate', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}).then(r=>r.json());
+  document.getElementById('result').innerHTML = `
+    <div><strong>metrics</strong> — acc=${(res.metrics.accuracy*100).toFixed(1)}%, 
+      prec=${(res.metrics.precision*100).toFixed(1)}%, rec=${(res.metrics.recall*100).toFixed(1)}%, 
+      f1=${(res.metrics.f1*100).toFixed(1)}%
+      <span class="small"> (TP=${res.metrics.tp}, TN=${res.metrics.tn}, FP=${res.metrics.fp}, FN=${res.metrics.fn})</span>
+    </div>
+    <div class="small" style="margin-top:8px;">详单条目：${res.details.length} 条</div>
+  `;
+}
+</script>
+</body>
+</html>
