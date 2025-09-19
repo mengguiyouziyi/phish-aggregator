@@ -81,7 +81,7 @@ MODEL_SOURCES = {
         "name": "URLBERT",
         "type": "git",
         "repo": "https://github.com/Davidup1/URLBERT",
-        "installed": False
+        "installed": True
     },
     "phishpedia": {
         "name": "Phishpedia (视觉)",

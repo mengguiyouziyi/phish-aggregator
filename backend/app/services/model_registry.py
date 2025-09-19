@@ -22,6 +22,15 @@ class ModelRegistry:
             print(f"❌ Failed to load URLTran: {e}")
             # 如果URLTran加载失败，不将其添加到模型列表中
 
+        # 延迟加载URLBERT模型
+        try:
+            from .detectors.urlbert_wrapper import URLBERTWrapper
+            self.models["urlbert"] = URLBERTWrapper()
+            print("✅ URLBERT model loaded successfully")
+        except Exception as e:
+            print(f"❌ Failed to load URLBERT: {e}")
+            # 如果URLBERT加载失败，不将其添加到模型列表中
+
     def list_models(self) -> Dict[str, dict]:
         entries = {}
         for k, v in self.models.items():
