@@ -421,30 +421,62 @@ const RenderEngine = {
         `;
       });
 
-      html += '</tbody></table></div>';
+      html += '</tbody></table>';
+
+      // 显示混淆矩阵数据
+      html += '<div class="confusion-matrix">';
+      html += '<h4>混淆矩阵详情</h4>';
+      html += '<table class="eval-table"><thead><tr><th>策略</th><th>TP</th><th>TN</th><th>FP</th><th>FN</th></tr></thead><tbody>';
+
+      Object.entries(metrics).forEach(([strategy, metric]) => {
+        html += `
+          <tr>
+            <td>${strategy.toUpperCase()}</td>
+            <td>${metric.tp}</td>
+            <td>${metric.tn}</td>
+            <td>${metric.fp}</td>
+            <td>${metric.fn}</td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table></div></div>';
     }
 
+    // 重新组织详细结果数据，按URL分组
+    const urlResults = {};
+    details.forEach(detail => {
+      if (!urlResults[detail.url]) {
+        urlResults[detail.url] = {
+          url: detail.url,
+          true_label: detail.true_label,
+          strategies: {}
+        };
+      }
+      urlResults[detail.url].strategies[detail.strategy] = detail;
+    });
+
     // 显示详细结果
-    if (details.length > 0) {
+    if (Object.keys(urlResults).length > 0) {
       html += '<div class="eval-details">';
       html += '<h4>详细结果</h4>';
       html += '<table class="eval-table"><thead><tr><th>URL</th><th>真实标签</th><th>ANY策略</th><th>WEIGHTED策略</th></tr></thead><tbody>';
 
-      details.forEach(detail => {
-        const anyResult = detail.strategies?.any || {};
-        const weightedResult = detail.strategies?.weighted || {};
+      Object.values(urlResults).forEach(result => {
+        const anyResult = result.strategies.any || {};
+        const weightedResult = result.strategies.weighted || {};
 
-        const anyLabel = anyResult.agg?.label === 1 ? '钓鱼' : '正常';
-        const weightedLabel = weightedResult.agg?.label === 1 ? '钓鱼' : '正常';
+        const anyLabel = anyResult.pred === 1 ? '钓鱼' : '正常';
+        const weightedLabel = weightedResult.pred === 1 ? '钓鱼' : '正常';
 
-        const trueLabel = detail.true_label === 1 ? '钓鱼' : '正常';
+        const trueLabel = result.true_label === 1 ? '钓鱼' : '正常';
 
         html += `
           <tr>
-            <td><a href="${detail.url}" target="_blank">${Utils.truncateUrl(detail.url)}</a></td>
-            <td><span class="label ${detail.true_label === 1 ? 'phishing' : 'legit'}">${trueLabel}</span></td>
-            <td><span class="label ${anyResult.agg?.label === 1 ? 'phishing' : 'legit'}">${anyLabel}</span></td>
-            <td><span class="label ${weightedResult.agg?.label === 1 ? 'phishing' : 'legit'}">${weightedLabel}</span></td>
+            <td><a href="${result.url}" target="_blank">${Utils.truncateUrl(result.url)}</a></td>
+            <td><span class="label ${result.true_label === 1 ? 'phishing' : 'legit'}">${trueLabel}</span></td>
+            <td><span class="label ${anyResult.pred === 1 ? 'phishing' : 'legit'}">${anyLabel}</span></td>
+            <td><span class="label ${weightedResult.pred === 1 ? 'phishing' : 'legit'}">${weightedLabel}</span></td>
           </tr>
         `;
       });
@@ -534,10 +566,23 @@ const AppController = {
     }
 
     // 评测按钮
-    const evalButton = document.querySelector('button[onclick="AppController.runEval()"]');
+    const evalButton = Array.from(document.querySelectorAll('button')).find(btn =>
+      btn.textContent.includes('开始评测') && btn.parentElement.className === 'button-group'
+    );
     if (evalButton) {
-      evalButton.setAttribute('onclick', '');
-      evalButton.addEventListener('click', () => this.runEval());
+      // 完全移除现有的onclick属性和事件监听器
+      evalButton.removeAttribute('onclick');
+      evalButton.onclick = null;
+
+      // 使用onclick属性直接绑定，保存this上下文
+      const self = this;
+      evalButton.onclick = function() {
+        console.log('🔍 评测按钮被点击！');
+        self.runEval();
+      };
+      console.log('✅ 评测按钮事件绑定成功');
+    } else {
+      console.error('❌ 未找到评测按钮');
     }
   },
 
