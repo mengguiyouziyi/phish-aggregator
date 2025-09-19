@@ -5,9 +5,6 @@ from ..config import MODELS_DIR
 
 from .detectors.baseline_sklearn import HeuristicBaseline
 
-# 这里可继续添加 URLTran / URLBERT / Phishpedia / PhishIntention 的包装器
-# 为了开箱即用，目前仅内置 HeuristicBaseline；其余模型通过 scripts/fetch_models.py 安装后可在此扩展。
-
 class ModelRegistry:
     def __init__(self):
         self.models: Dict[str, object] = {}
@@ -15,6 +12,15 @@ class ModelRegistry:
 
     def _load_builtin(self):
         self.models["heuristic_baseline"] = HeuristicBaseline()
+
+        # 延迟加载URLTran模型
+        try:
+            from .detectors.urltran_wrapper import URLTranWrapper
+            self.models["urltran"] = URLTranWrapper()
+            print("✅ URLTran model loaded successfully")
+        except Exception as e:
+            print(f"❌ Failed to load URLTran: {e}")
+            # 如果URLTran加载失败，不将其添加到模型列表中
 
     def list_models(self) -> Dict[str, dict]:
         entries = {}

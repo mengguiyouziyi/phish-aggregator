@@ -106,6 +106,37 @@ const Utils = {
         setTimeout(() => inThrottle = false, limit);
       }
     };
+  },
+
+  /**
+   * 截断URL显示
+   * @param {string} url - URL字符串
+   * @param {number} maxLength - 最大长度
+   * @returns {string} 截断后的URL
+   */
+  truncateUrl(url, maxLength = 50) {
+    if (!url || url.length <= maxLength) return url;
+
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname;
+      const pathname = urlObj.pathname;
+
+      if (hostname.length + pathname.length <= maxLength) {
+        return url;
+      }
+
+      // 优先显示域名，截断路径
+      if (hostname.length > maxLength - 10) {
+        return hostname.substring(0, maxLength - 10) + '...';
+      }
+
+      const remainingLength = maxLength - hostname.length - 3;
+      return hostname + pathname.substring(0, remainingLength) + '...';
+    } catch {
+      // 如果URL解析失败，简单截断
+      return url.substring(0, maxLength - 3) + '...';
+    }
   }
 };
 
@@ -360,38 +391,66 @@ const RenderEngine = {
     const container = document.getElementById('result');
     if (!container) return;
 
-    const { results } = data;
+    // 检查数据结构 - API返回 {metrics: Object, details: Array}
+    let details = data.details || [];
+    let metrics = data.metrics || {};
+
+    if (!Array.isArray(details)) {
+      console.error('评测数据格式错误:', data);
+      Utils.showNotification('评测数据格式错误', 'error');
+      return;
+    }
+
     let html = '<div class="eval-results"><h3>评测结果</h3>';
 
-    results.forEach(r => {
-      html += `<h4>URL: ${r.url}</h4>`;
-      html += '<table class="eval-table"><thead><tr><th>策略</th><th>结果</th><th>分数</th><th>命中规则</th><th>模型预测</th></tr></thead><tbody>';
+    // 显示评测指标
+    if (Object.keys(metrics).length > 0) {
+      html += '<div class="eval-metrics">';
+      html += '<h4>评测指标</h4>';
+      html += '<table class="eval-table"><thead><tr><th>策略</th><th>准确率</th><th>精确率</th><th>召回率</th><th>F1分数</th></tr></thead><tbody>';
 
-      Object.entries(r.strategies).forEach(([strategy, result]) => {
-        const hitRules = Object.entries(result.rules || {})
-          .filter(([_, hit]) => hit)
-          .map(([rule, _]) => rule);
-
-        const modelPreds = Object.entries(result.models || {})
-          .map(([model, pred]) => `${model}: ${pred.label} (${pred.proba.toFixed(4)})`)
-          .join(', ');
-
-        const isPhishing = result.agg.label === 1;
-        const confidence = Utils.formatConfidence(result.agg.score);
-
+      Object.entries(metrics).forEach(([strategy, metric]) => {
         html += `
           <tr>
             <td>${strategy.toUpperCase()}</td>
-            <td><span class="label ${isPhishing ? 'phishing' : 'legit'}">${isPhishing ? '钓鱼' : '正常'}</span></td>
-            <td>${confidence}</td>
-            <td>${hitRules.length > 0 ? hitRules.join(', ') : '-'}</td>
-            <td>${modelPreds}</td>
+            <td>${(metric.accuracy * 100).toFixed(2)}%</td>
+            <td>${(metric.precision * 100).toFixed(2)}%</td>
+            <td>${(metric.recall * 100).toFixed(2)}%</td>
+            <td>${(metric.f1 * 100).toFixed(2)}%</td>
           </tr>
         `;
       });
 
-      html += '</tbody></table>';
-    });
+      html += '</tbody></table></div>';
+    }
+
+    // 显示详细结果
+    if (details.length > 0) {
+      html += '<div class="eval-details">';
+      html += '<h4>详细结果</h4>';
+      html += '<table class="eval-table"><thead><tr><th>URL</th><th>真实标签</th><th>ANY策略</th><th>WEIGHTED策略</th></tr></thead><tbody>';
+
+      details.forEach(detail => {
+        const anyResult = detail.strategies?.any || {};
+        const weightedResult = detail.strategies?.weighted || {};
+
+        const anyLabel = anyResult.agg?.label === 1 ? '钓鱼' : '正常';
+        const weightedLabel = weightedResult.agg?.label === 1 ? '钓鱼' : '正常';
+
+        const trueLabel = detail.true_label === 1 ? '钓鱼' : '正常';
+
+        html += `
+          <tr>
+            <td><a href="${detail.url}" target="_blank">${Utils.truncateUrl(detail.url)}</a></td>
+            <td><span class="label ${detail.true_label === 1 ? 'phishing' : 'legit'}">${trueLabel}</span></td>
+            <td><span class="label ${anyResult.agg?.label === 1 ? 'phishing' : 'legit'}">${anyLabel}</span></td>
+            <td><span class="label ${weightedResult.agg?.label === 1 ? 'phishing' : 'legit'}">${weightedLabel}</span></td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table></div>';
+    }
 
     html += '</div>';
     container.innerHTML = html;

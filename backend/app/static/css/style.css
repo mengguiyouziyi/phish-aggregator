@@ -219,6 +219,27 @@ textarea {
   border-color: var(--border-hover);
 }
 
+/* 策略帮助按钮 */
+.strategy-help-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: var(--transition);
+  font-size: 0.9rem;
+  z-index: 10;
+}
+
+.strategy-help-btn:hover {
+  color: var(--primary-color);
+  background: rgba(37, 99, 235, 0.05);
+}
+
 /* 复选框样式 */
 .checkbox-item {
   display: flex;

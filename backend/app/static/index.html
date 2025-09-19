@@ -51,6 +51,9 @@
                 ANY<br>
                 <small>命中任一即判定</small>
               </label>
+              <button class="strategy-help-btn" onclick="ModalManager.showStrategyDescription('any')" title="ANY策略说明">
+                <i class="fas fa-question-circle"></i>
+              </button>
             </div>
             <div class="strategy-option">
               <input type="radio" id="strategy-weighted" name="strategy" value="weighted">
@@ -59,6 +62,9 @@
                 WEIGHTED<br>
                 <small>概率加权平均</small>
               </label>
+              <button class="strategy-help-btn" onclick="ModalManager.showStrategyDescription('weighted')" title="WEIGHTED策略说明">
+                <i class="fas fa-question-circle"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -81,7 +87,6 @@
         <div id="rules">
           <div class="loading-placeholder">加载中...</div>
         </div>
-        <button class="help-btn" onclick="ModalManager.showStrategyDescription('any')" title="策略说明">?</button>
       </section>
 
       <section>

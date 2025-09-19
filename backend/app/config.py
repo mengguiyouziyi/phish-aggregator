@@ -75,7 +75,7 @@ MODEL_SOURCES = {
         "name": "URLTran",
         "type": "git",
         "repo": "https://github.com/bfilar/URLTran",
-        "installed": False
+        "installed": True
     },
     "urlbert": {
         "name": "URLBERT",
