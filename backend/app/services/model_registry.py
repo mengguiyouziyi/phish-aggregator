@@ -40,6 +40,15 @@ class ModelRegistry:
             print(f"❌ Failed to load visual detection model: {e}")
             # 如果视觉检测模型加载失败，不将其添加到模型列表中
 
+        # 延迟加载PhishIntention模型（视觉+交互）
+        try:
+            from .detectors.phishintention_wrapper import PhishIntentionWrapper
+            self.models["phishintention"] = PhishIntentionWrapper()
+            print("✅ PhishIntention (visual+interaction) model loaded successfully")
+        except Exception as e:
+            print(f"❌ Failed to load PhishIntention model: {e}")
+            # 如果PhishIntention模型加载失败，不将其添加到模型列表中
+
     def list_models(self) -> Dict[str, dict]:
         entries = {}
         for k, v in self.models.items():

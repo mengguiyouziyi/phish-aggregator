@@ -92,9 +92,10 @@ MODEL_SOURCES = {
     },
     "phishintention": {
         "name": "PhishIntention (视觉+交互)",
-        "type": "git",
-        "repo": "https://github.com/lindsey98/PhishIntention",
-        "installed": False
+        "type": "local",
+        "installed": True,
+        "description": "基于视觉相似性和交互模式的钓鱼网站检测",
+        "note": "结合视觉分析和交互行为分析的综合检测模型"
     },
     "opensquat": {
         "name": "openSquat (同形/近似域)",
