@@ -33,6 +33,21 @@
       "config": {},
       "description": "基于规则和特征的URL安全检测器"
     },
+    "urlbert": {
+      "name": "URLBERT",
+      "type": "transformer",
+      "class": "URLBERTWrapper",
+      "module": "app.services.detectors.urlbert_wrapper",
+      "enabled": true,
+      "config": {
+        "model_path": "backend/data/models/urlbert/trained_model"
+      },
+      "dependencies": [
+        "torch",
+        "transformers"
+      ],
+      "description": "基于原始URLBERT项目的URL分类器"
+    },
     "visual_detector": {
       "name": "Visual Detector",
       "type": "visual",
@@ -109,10 +124,11 @@
         "name": "WEIGHTED Strategy",
         "description": "基于权重和置信度的加权平均策略",
         "model_weights": {
-          "heuristic_baseline": 0.2,
-          "urltran": 0.4,
-          "safesurf": 0.3,
-          "visual_detector": 0.1
+          "heuristic_baseline": 0.15,
+          "urltran": 0.3,
+          "urlbert": 0.3,
+          "safesurf": 0.2,
+          "visual_detector": 0.05
         },
         "rule_weight": 0.8
       }
