@@ -49,6 +49,15 @@ class ModelRegistry:
             print(f"❌ Failed to load PhishIntention model: {e}")
             # 如果PhishIntention模型加载失败，不将其添加到模型列表中
 
+        # 延迟加载openSquat模型（同形/近似域）
+        try:
+            from .detectors.opensquat_wrapper import OpenSquatWrapper
+            self.models["opensquat"] = OpenSquatWrapper()
+            print("✅ openSquat (homograph/domain) model loaded successfully")
+        except Exception as e:
+            print(f"❌ Failed to load openSquat model: {e}")
+            # 如果openSquat模型加载失败，不将其添加到模型列表中
+
     def list_models(self) -> Dict[str, dict]:
         entries = {}
         for k, v in self.models.items():

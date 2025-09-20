@@ -99,9 +99,10 @@ MODEL_SOURCES = {
     },
     "opensquat": {
         "name": "openSquat (同形/近似域)",
-        "type": "git",
-        "repo": "https://github.com/atenreiro/opensquat",
-        "installed": False
+        "type": "local",
+        "installed": True,
+        "description": "基于同形字符和域名相似度的钓鱼网站检测",
+        "note": "检测同形字符攻击、域名相似性和域名结构异常"
     },
     # 你给的教学/演示项目（通过 fetch_repos.py 克隆，默认不参与推断，仅展示/比对可用特征或调用其模型若适配）
     "safesurf": {
