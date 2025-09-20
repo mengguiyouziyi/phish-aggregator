@@ -27,8 +27,13 @@
 
         <!-- URL输入 -->
         <div class="form-group">
-          <label for="urls">待检测URL（每行一个）</label>
-          <textarea id="urls" placeholder="https://example.com&#10;https://test.com"></textarea>
+          <label for="urls">
+            待检测URL（每行一个）
+            <button class="btn-icon" onclick="HistoryManager.show()" title="查看历史记录">
+              <i class="fas fa-history"></i>
+            </button>
+          </label>
+          <textarea id="urls" placeholder="请输入要检测的URL，每行一个..."></textarea>
         </div>
 
         <!-- 阈值设置 -->
@@ -119,6 +124,45 @@
       </div>
       <div class="modal-body" id="modalBody">
         <!-- 动态内容 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 历史记录弹窗 -->
+  <div id="historyModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">历史记录</h3>
+        <button class="modal-close" onclick="HistoryManager.hide()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="history-sections">
+          <div class="history-section">
+            <h4><i class="fas fa-exclamation-triangle text-danger"></i> 钓鱼网站测试用例</h4>
+            <div class="history-url-list" id="phishingUrls">
+              <!-- 动态加载 -->
+            </div>
+          </div>
+          <div class="history-section">
+            <h4><i class="fas fa-shield-alt text-success"></i> 正常网站测试用例</h4>
+            <div class="history-url-list" id="legitimateUrls">
+              <!-- 动态加载 -->
+            </div>
+          </div>
+        </div>
+        <div class="history-actions">
+          <button class="btn btn-primary" onclick="HistoryManager.addAllPhishing()">
+            <i class="fas fa-plus"></i> 添加所有钓鱼网站
+          </button>
+          <button class="btn btn-primary" onclick="HistoryManager.addAllLegitimate()">
+            <i class="fas fa-plus"></i> 添加所有正常网站
+          </button>
+          <button class="btn btn-secondary" onclick="HistoryManager.clearInput()">
+            <i class="fas fa-eraser"></i> 清空输入框
+          </button>
+        </div>
       </div>
     </div>
   </div>

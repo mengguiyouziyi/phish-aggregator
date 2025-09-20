@@ -676,6 +676,164 @@ document.addEventListener('DOMContentLoaded', () => {
   AppController.init();
 });
 
+// 历史记录管理器
+const HistoryManager = {
+  // 预设的测试用例
+  phishingUrls: [
+    'http://xxx-video-free-stream.com/watch/movie123',
+    'http://casino-bonus-win-real-money.net/promo/welcome',
+    'http://adult-dating-site.meet-local-girls.com/profile',
+    'http://free-credit-card-generator.cc/visa-generator',
+    'http://crack-software-download.com/windows-11-activator',
+    'http://watch-live-sports-freehd.tv/nfl-stream',
+    'http://pharmacy-online-without-prescription.com/viagra',
+    'http://torrent-movie-download-hd.com/hollywood-2024',
+    'http://hack-facebook-account-online.com/hack-now',
+    'http://earn-money-fast-online.com/quick-cash-scheme'
+  ],
+
+  legitimateUrls: [
+    'https://github.com/microsoft/vscode/blob/main/README.md',
+    'https://stackoverflow.com/questions/12345678/how-to-solve-this-problem',
+    'https://www.bbc.com/news/world-asia-china-67890123',
+    'https://docs.python.org/3/tutorial/classes.html',
+    'https://www.amazon.com/dp/B0CXXXXXXX/ref=xyz_123',
+    'https://www.linkedin.com/in/johndoe/details/experience/',
+    'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    'https://www.reddit.com/r/technology/comments/abcdef/interesting_article',
+    'https://www.wikipedia.org/wiki/Artificial_intelligence'
+  ],
+
+  /**
+   * 显示历史记录弹窗
+   */
+  show() {
+    const modal = document.getElementById('historyModal');
+    modal.classList.add('active');
+    setTimeout(() => {
+      modal.querySelector('.modal-body').style.opacity = '1';
+      modal.querySelector('.modal-body').style.transform = 'translateY(0)';
+    }, 10);
+    this.loadHistoryUrls();
+  },
+
+  /**
+   * 隐藏历史记录弹窗
+   */
+  hide() {
+    const modal = document.getElementById('historyModal');
+    modal.querySelector('.modal-body').style.opacity = '0';
+    modal.querySelector('.modal-body').style.transform = 'translateY(-20px)';
+    setTimeout(() => {
+      modal.classList.remove('active');
+    }, 300);
+  },
+
+  /**
+   * 加载历史记录URL
+   */
+  loadHistoryUrls() {
+    const phishingContainer = document.getElementById('phishingUrls');
+    const legitimateContainer = document.getElementById('legitimateUrls');
+
+    // 清空容器
+    phishingContainer.innerHTML = '';
+    legitimateContainer.innerHTML = '';
+
+    // 加载钓鱼网站URL
+    this.phishingUrls.forEach(url => {
+      const item = this.createUrlItem(url, 'phishing');
+      phishingContainer.appendChild(item);
+    });
+
+    // 加载正常网站URL
+    this.legitimateUrls.forEach(url => {
+      const item = this.createUrlItem(url, 'legitimate');
+      legitimateContainer.appendChild(item);
+    });
+  },
+
+  /**
+   * 创建URL项
+   */
+  createUrlItem(url, type) {
+    const item = document.createElement('div');
+    item.className = 'history-url-item';
+    item.innerHTML = `
+      <span class="history-url-text">${url}</span>
+      <button class="history-url-add" onclick="HistoryManager.addUrl('${url.replace(/'/g, "\\'")}')">添加</button>
+    `;
+    return item;
+  },
+
+  /**
+   * 添加单个URL到输入框
+   */
+  addUrl(url) {
+    const textarea = document.getElementById('urls');
+    const currentUrls = textarea.value.split('\n').filter(u => u.trim());
+
+    if (!currentUrls.includes(url)) {
+      currentUrls.push(url);
+      textarea.value = currentUrls.join('\n');
+      Utils.showNotification(`已添加: ${url}`, 'success');
+    } else {
+      Utils.showNotification('URL已存在', 'warning');
+    }
+  },
+
+  /**
+   * 添加所有钓鱼网站
+   */
+  addAllPhishing() {
+    this.addMultipleUrls(this.phishingUrls, '钓鱼网站');
+  },
+
+  /**
+   * 添加所有正常网站
+   */
+  addAllLegitimate() {
+    this.addMultipleUrls(this.legitimateUrls, '正常网站');
+  },
+
+  /**
+   * 添加多个URL
+   */
+  addMultipleUrls(urls, type) {
+    const textarea = document.getElementById('urls');
+    const currentUrls = textarea.value.split('\n').filter(u => u.trim());
+    let addedCount = 0;
+
+    urls.forEach(url => {
+      if (!currentUrls.includes(url)) {
+        currentUrls.push(url);
+        addedCount++;
+      }
+    });
+
+    if (addedCount > 0) {
+      textarea.value = currentUrls.join('\n');
+      Utils.showNotification(`已添加${addedCount}个${type}`, 'success');
+    } else {
+      Utils.showNotification(`所有${type}都已存在`, 'warning');
+    }
+  },
+
+  /**
+   * 清空输入框
+   */
+  clearInput() {
+    const textarea = document.getElementById('urls');
+    if (textarea.value.trim()) {
+      textarea.value = '';
+      Utils.showNotification('输入框已清空', 'info');
+    } else {
+      Utils.showNotification('输入框已经是空的', 'warning');
+    }
+  }
+};
+
 // 导出到全局作用域（为了向后兼容）
 window.AppController = AppController;
 window.Utils = Utils;
@@ -683,3 +841,4 @@ window.ApiService = ApiService;
 window.UIManager = UIManager;
 window.RenderEngine = RenderEngine;
 window.StrategyManager = StrategyManager;
+window.HistoryManager = HistoryManager;
