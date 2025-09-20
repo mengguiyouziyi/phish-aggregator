@@ -1,0 +1,139 @@
+{
+  "models": {
+    "heuristic_baseline": {
+      "name": "Heuristic Baseline",
+      "type": "local",
+      "class": "HeuristicBaseline",
+      "module": "app.services.detectors.baseline_sklearn",
+      "enabled": true,
+      "config": {},
+      "description": "基于启发式规则的基线检测器"
+    },
+    "urltran": {
+      "name": "URLTran",
+      "type": "transformer",
+      "class": "URLTranWrapper",
+      "module": "app.services.detectors.urltran_wrapper",
+      "enabled": true,
+      "config": {
+        "model_path": "data/models/urltran/URLTran-BERT"
+      },
+      "dependencies": [
+        "torch",
+        "transformers"
+      ],
+      "description": "基于BERT的URL分类器，参考URLTran论文实现"
+    },
+    "safesurf": {
+      "name": "SafeSurf",
+      "type": "local",
+      "class": "SafeSurfWrapper",
+      "module": "app.services.safesurf_detector",
+      "enabled": true,
+      "config": {},
+      "description": "基于规则和特征的URL安全检测器"
+    },
+    "visual_detector": {
+      "name": "Visual Detector",
+      "type": "visual",
+      "class": "VisualPhishingDetector",
+      "module": "app.services.visual_detector",
+      "enabled": false,
+      "config": {},
+      "dependencies": [
+        "selenium",
+        "pillow",
+        "opencv-python",
+        "pytesseract"
+      ],
+      "description": "基于视觉特征的钓鱼网站检测器"
+    }
+  },
+  "rules": {
+    "metamask_eth_phishing_detect": {
+      "name": "MetaMask eth-phishing-detect",
+      "type": "domainlist",
+      "parser": "metamask",
+      "enabled": true,
+      "urls": [
+        "https://raw.githubusercontent.com/MetaMask/eth-phishing-detect/main/src/config.json"
+      ],
+      "update_interval": 86400,
+      "description": "MetaMask以太坊钓鱼域名检测列表"
+    },
+    "polkadot_js_phishing": {
+      "name": "polkadot{.js} phishing",
+      "type": "domainlist",
+      "parser": "polkadot",
+      "enabled": true,
+      "urls": [
+        "https://raw.githubusercontent.com/polkadot-js/phishing/master/all.json",
+        "https://raw.githubusercontent.com/polkadot-js/phishing/master/address.json"
+      ],
+      "update_interval": 86400,
+      "description": "Polkadot生态钓鱼网站检测列表"
+    },
+    "phishing_database": {
+      "name": "Phishing.Database",
+      "type": "urllist",
+      "parser": "phishing_database",
+      "enabled": true,
+      "urls": [
+        "https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/master/phishing-links-ACTIVE-NOW.txt",
+        "https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/master/phishing-domains-ACTIVE.txt",
+        "https://cdn.jsdelivr.net/gh/Phishing-Database/Phishing.Database@master/phishing-links-ACTIVE-NOW.txt",
+        "https://cdn.jsdelivr.net/gh/Phishing-Database/Phishing.Database@master/phishing-domains-ACTIVE.txt"
+      ],
+      "update_interval": 43200,
+      "description": "通用钓鱼网站数据库"
+    },
+    "cryptoscamdb": {
+      "name": "CryptoScamDB",
+      "type": "domainlist",
+      "parser": "cryptoscamdb",
+      "enabled": true,
+      "urls": [
+        "https://api.cryptoscamdb.org/v1/blacklist"
+      ],
+      "update_interval": 86400,
+      "description": "加密货币诈骗数据库API"
+    }
+  },
+  "aggregation": {
+    "strategies": {
+      "any": {
+        "name": "ANY Strategy",
+        "description": "任一规则或模型命中即判定为钓鱼网站"
+      },
+      "weighted": {
+        "name": "WEIGHTED Strategy",
+        "description": "基于权重和置信度的加权平均策略",
+        "model_weights": {
+          "heuristic_baseline": 0.2,
+          "urltran": 0.4,
+          "safesurf": 0.3,
+          "visual_detector": 0.1
+        },
+        "rule_weight": 0.8
+      }
+    },
+    "default_strategy": "any",
+    "default_threshold": 0.5
+  },
+  "system": {
+    "cache_enabled": true,
+    "cache_ttl": 3600,
+    "max_concurrent_requests": 10,
+    "timeout": 30,
+    "retry_attempts": 3,
+    "log_level": "INFO",
+    "hot_reload": true,
+    "config_watcher": {
+      "enabled": true,
+      "watch_files": [
+        "config/models.json"
+      ],
+      "debounce_seconds": 5
+    }
+  }
+}
