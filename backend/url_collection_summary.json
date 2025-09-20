@@ -1,0 +1,44 @@
+{
+  "update_time": "2025-01-20",
+  "statistics": {
+    "total_phishing_urls": 100,
+    "total_legitimate_urls": 40,
+    "phishing_sources": [
+      "OpenPhish",
+      "URLhaus"
+    ],
+    "categories": {
+      "financial": 5,
+      "social_media": 1,
+      "shopping": 3,
+      "government": 1,
+      "tech_company": 4,
+      "other": 186
+    }
+  },
+  "sample_phishing_urls": [
+    "http://tre-zorbridge-secure.pages.dev/",
+    "http://interbank-benefits-creditos-digitales.savvysalon.com/",
+    "https://mycomoxvalley.ca/wp-includes/css/ca1/form17.html?partner=Scotiabank",
+    "http://secure-trezor-i-get.typedream.app/",
+    "http://secure-io-start.pages.dev/",
+    "http://www.facebook-alerts.blogspot.com.ng/",
+    "https://store.workshopmodsreview.com/sharedfiles/filesdetails/aug_poseidon/",
+    "http://amazon-clone-6hsy.vercel.app/",
+    "https://khuzaim2008-cpu.github.io/Amazon-Clone/",
+    "http://www.giristurkiyegovtr.vercel.app/"
+  ],
+  "sample_legitimate_urls": [
+    "https://github.com/microsoft/vscode/blob/main/README.md",
+    "https://stackoverflow.com/questions/12345678/how-to-solve-this-problem",
+    "https://www.bbc.com/news/world-asia-china-67890123",
+    "https://www.wikipedia.org/wiki/Computer_science",
+    "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+    "https://www.python.org/downloads/",
+    "https://www.reddit.com/r/programming/",
+    "https://medium.com/topic/technology",
+    "https://news.ycombinator.com/",
+    "https://www.coursera.org/learn/python"
+  ],
+  "notes": "所有钓鱼URL均来自公开的安全数据库，用于测试和研究目的"
+}
