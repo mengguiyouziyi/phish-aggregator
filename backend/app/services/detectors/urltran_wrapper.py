@@ -154,11 +154,12 @@ class URLTranWrapper:
         features['has_at_symbol'] = '@' in url
 
         # 可疑关键词（基于URLTran论文中的钓鱼URL常见词）
+        # 注意：移除了知名品牌名称，避免误报正常网站
         suspicious_keywords = [
             'login', 'signin', 'secure', 'account', 'update', 'verify', 'bank',
-            'paypal', 'apple', 'microsoft', 'google', 'facebook', 'amazon',
             'password', 'credit', 'card', 'payment', 'billing', 'security',
-            'authenticate', 'confirm', 'restore', 'recover', 'blocked', 'suspended'
+            'authenticate', 'confirm', 'restore', 'recover', 'blocked', 'suspended',
+            'signin', 'verify-account', 'secure-login', 'account-update'
         ]
 
         features['suspicious_keyword_count'] = sum(
@@ -185,27 +186,38 @@ class URLTranWrapper:
         # 基础分数
         score = 0.0
 
+        # 检查是否为知名品牌域名，如果是则大幅降低风险
+        legitimate_domains = [
+            'google.com', 'github.com', 'microsoft.com', 'apple.com', 'amazon.com',
+            'facebook.com', 'twitter.com', 'linkedin.com', 'baidu.com', 'wikipedia.org',
+            'stackoverflow.com', 'medium.com', 'reddit.com', 'youtube.com', 'instagram.com'
+        ]
+
+        domain = url.split('/')[0].lower() if '/' in url else url.lower()
+        if domain in legitimate_domains:
+            return 0.1  # 知名域名风险极低
+
         # 长度惩罚（过长URL更容易是钓鱼）
         if features['url_length'] > 100:
-            score += 0.2
+            score += 0.15
         elif features['url_length'] > 75:
-            score += 0.1
-        elif features['url_length'] < 20:
-            score += 0.05  # 过短URL也可能是缩短的钓鱼链接
+            score += 0.08
 
-        # 特殊字符惩罚
+        # 特殊字符惩罚（降低惩罚力度）
         special_char_ratio = features['special_char_count'] / max(features['url_length'], 1)
-        score += min(special_char_ratio * 2, 0.3)
+        score += min(special_char_ratio * 1.5, 0.2)
 
-        # 数字比例惩罚
+        # 数字比例惩罚（降低惩罚力度）
         digit_ratio = features['digit_count'] / max(features['url_length'], 1)
-        score += min(digit_ratio * 1.5, 0.2)
+        score += min(digit_ratio * 1.0, 0.15)
 
-        # 子域名数量惩罚
-        score += min(features['subdomain_count'] * 0.15, 0.3)
+        # 子域名数量惩罚（调整阈值）
+        if features['subdomain_count'] > 3:
+            score += min((features['subdomain_count'] - 2) * 0.1, 0.25)
 
-        # 路径深度惩罚
-        score += min(features['path_depth'] * 0.1, 0.2)
+        # 路径深度惩罚（降低惩罚力度）
+        if features['path_depth'] > 5:
+            score += min(features['path_depth'] * 0.05, 0.15)
 
         # 严重危险信号
         if features['has_ip']:
@@ -215,19 +227,19 @@ class URLTranWrapper:
         if features['has_at_symbol']:
             score += 0.3  # @符号常用于欺骗性邮箱URL
 
-        # 可疑关键词评分
-        keyword_score = min(features['suspicious_keyword_count'] * 0.12, 0.5)
+        # 可疑关键词评分（降低权重）
+        keyword_score = min(features['suspicious_keyword_count'] * 0.08, 0.3)
         score += keyword_score
 
         # URL缩短服务
         if features['is_shortened']:
-            score += 0.3
+            score += 0.25
 
-        # 域名长度异常
-        if features['domain_length'] > 30:
-            score += 0.15
-        elif features['domain_length'] < 5:
+        # 域名长度异常（调整阈值）
+        if features['domain_length'] > 40:
             score += 0.1
+        elif features['domain_length'] < 3:
+            score += 0.05
 
         return min(score, 1.0)
 
@@ -273,14 +285,15 @@ class URLTranWrapper:
                 model_confidence = probabilities[0][1].item()  # 钓鱼类别概率
 
             # 基于特征调整模型置信度
-            # 如果特征强烈表明是钓鱼网站，但模型置信度不高，提高评分
-            if heuristic_score > 0.7 and model_confidence < 0.5:
-                adjusted_confidence = (model_confidence + heuristic_score) / 2
+            # 由于当前使用未训练的BERT模型，主要依赖启发式评分
+            if heuristic_score > 0.6 and model_confidence < 0.5:
+                adjusted_confidence = (model_confidence * 0.3 + heuristic_score * 0.7)
             # 如果特征表明正常，但模型置信度高，降低评分
-            elif heuristic_score < 0.3 and model_confidence > 0.7:
-                adjusted_confidence = (model_confidence * 0.7 + heuristic_score * 0.3)
+            elif heuristic_score < 0.3 and model_confidence > 0.6:
+                adjusted_confidence = (model_confidence * 0.4 + heuristic_score * 0.6)
             else:
-                adjusted_confidence = model_confidence
+                # 对于未训练模型，更依赖启发式评分
+                adjusted_confidence = (model_confidence * 0.4 + heuristic_score * 0.6)
 
             return float(adjusted_confidence)
 
